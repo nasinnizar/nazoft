@@ -1,27 +1,16 @@
-import "dotenv/config";
-import pg from "pg";
-
-const { Client } = pg;
-if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is missing");
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  connectionTimeoutMillis: 15_000,
-});
+import { pool } from "../src/db/pool.js";
 
 try {
-  await client.connect();
-  await client.query(`
-    create table if not exists crm_workspaces (
-      id text primary key,
+  await pool.query(`
+    create table if not exists crm_user_workspaces (
+      owner_id uuid primary key references auth.users(id) on delete cascade,
       state jsonb not null default '{}'::jsonb,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     );
+    create index if not exists crm_user_workspaces_updated_at_idx on crm_user_workspaces(updated_at desc);
   `);
-  console.log("Supabase schema is ready.");
+  console.log("Supabase CRM schema is ready.");
 } finally {
-  await client.end();
+  await pool.end();
 }
-

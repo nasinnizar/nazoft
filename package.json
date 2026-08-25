@@ -1,0 +1,17 @@
+{
+  "name": "nazoft-crm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sh scripts/node.sh --watch server.js",
+    "start": "sh scripts/node.sh server.js",
+    "db:migrate": "sh scripts/node.sh scripts/migrate.js",
+    "check": "sh scripts/node.sh --check server.js && sh scripts/node.sh scripts/check-client.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  }
+}

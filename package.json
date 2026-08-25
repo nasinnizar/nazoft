@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.19.0",
   "scripts": {
     "dev": "sh scripts/node.sh --watch server.js",
     "start": "sh scripts/node.sh server.js",

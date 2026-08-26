@@ -13,4 +13,4 @@ The browser keeps a local copy for resilience. When served through the Node serv
 
 ## Vercel deployment
 
-The included `api/index.js` is a Vercel serverless entry point and `vercel.json` routes the CRM and API through it. In Vercel Project Settings → Environment Variables, add `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `COOKIE_SECURE=true`. Run `pnpm db:migrate` once from a trusted local environment before the first deploy.
+Vercel serves `index.html` and `nazoft-logo.svg` as static files, while files in `api/` run as serverless functions. In Vercel Project Settings → Environment Variables, add `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `COOKIE_SECURE=true`. Run `pnpm db:migrate` once from a trusted local environment before the first deploy.

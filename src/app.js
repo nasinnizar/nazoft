@@ -48,3 +48,8 @@ app.use((error, _request, response, _next) => {
   console.error(error);
   response.status(500).json({ error: "Unexpected server error" });
 });
+
+// Vercel may detect this module as the production Node entrypoint. Export the
+// Express app as the default handler while keeping the named export for the
+// local launcher.
+export default app;

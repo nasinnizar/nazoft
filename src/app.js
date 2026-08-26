@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import helmet from "helmet";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { optionalAuth } from "./middleware/auth.js";
@@ -10,6 +11,7 @@ import { getWorkspace } from "./services/workspace.js";
 import { pool } from "./db/pool.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const logoSvg = readFileSync(fileURLToPath(new URL("../nazoft-logo.svg", import.meta.url)), "utf8");
 export const app = express();
 
 app.disable("x-powered-by");
@@ -24,6 +26,9 @@ app.get("/health", async (_request, response) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api", workspaceRouter);
+app.get("/nazoft-logo.svg", (_request, response) => {
+  response.type("image/svg+xml").set("Cache-Control", "public, max-age=86400").send(logoSvg);
+});
 app.get("/bootstrap.js", optionalAuth, async (request, response, next) => {
   try {
     response.set("Cache-Control", "no-store");

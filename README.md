@@ -13,4 +13,4 @@ The browser keeps a local copy for resilience. When served through the Node serv
 
 ## Vercel deployment
 
-Vercel serves `index.html` and `nazoft-logo.svg` as static files, while files in `api/` run as serverless functions. In Vercel Project Settings → Environment Variables, add `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `COOKIE_SECURE=true`. Run `pnpm db:migrate` once from a trusted local environment before the first deploy.
+Vercel serves `index.html` and `nazoft-logo.svg` as static files, while files in `api/` run as serverless functions. The local launcher deliberately lives in `scripts/local-server.js` so Vercel does not mistake it for the production entry point. In Vercel Project Settings → Environment Variables, add `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `COOKIE_SECURE=true`. Run `pnpm db:migrate` once from a trusted local environment before the first deploy.

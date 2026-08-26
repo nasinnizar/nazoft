@@ -5,11 +5,11 @@
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "scripts": {
-    "dev": "sh scripts/node.sh --watch server.js",
-    "start": "sh scripts/node.sh server.js",
-    "build": "node --check server.js && find api src -type f -name '*.js' -exec node --check {} \\; && node scripts/check-client.js",
+    "dev": "sh scripts/node.sh --watch scripts/local-server.js",
+    "start": "sh scripts/node.sh scripts/local-server.js",
+    "build": "find api scripts src -type f -name '*.js' -exec sh scripts/node.sh --check {} \\; && sh scripts/node.sh scripts/check-client.js",
     "db:migrate": "sh scripts/node.sh scripts/migrate.js",
-    "check": "sh scripts/node.sh --check server.js && sh scripts/node.sh scripts/check-client.js"
+    "check": "sh scripts/node.sh --check scripts/local-server.js && sh scripts/node.sh scripts/check-client.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

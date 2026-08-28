@@ -1,7 +1,8 @@
-import { supabase } from "../services/supabase.js";
+import { requireSupabase } from "../services/supabase.js";
 import { clearSessionCookies, setSessionCookies } from "../services/session.js";
 
 async function resolveUser(request, response) {
+  const supabase = requireSupabase();
   const bearer = request.get("authorization")?.replace(/^Bearer\s+/i, "");
   const token = bearer || request.cookies.nazoft_access_token;
   if (token) {
@@ -22,11 +23,20 @@ async function resolveUser(request, response) {
   return data.user;
 }
 
+export function getRequestAccessToken(request) {
+  const bearer = request.get("authorization")?.replace(/^Bearer\s+/i, "");
+  return bearer || request.cookies.nazoft_access_token || null;
+}
+
 export async function optionalAuth(request, response, next) {
   try {
     request.user = await resolveUser(request, response);
     next();
   } catch (error) {
+    if (error.statusCode === 503) {
+      request.user = null;
+      return next();
+    }
     next(error);
   }
 }
@@ -37,6 +47,7 @@ export async function requireAuth(request, response, next) {
     if (!request.user) return response.status(401).json({ error: "Authentication required or session expired." });
     next();
   } catch (error) {
+    if (error.statusCode === 503) return response.status(503).json({ error: "Authentication is temporarily unavailable." });
     next(error);
   }
 }

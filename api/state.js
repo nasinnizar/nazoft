@@ -11,5 +11,8 @@ export default async function handler(request, response) {
     if (!state || typeof state !== "object" || Array.isArray(state)) return json(response, 400, { error: "A valid CRM workspace object is required." });
     await saveWorkspace(user.id, state);
     response.statusCode = 204; response.end();
-  } catch (error) { console.error(error); json(response, 500, { error: "Unable to save CRM workspace" }); }
+  } catch (error) {
+    if (!error.statusCode || error.statusCode >= 500) console.error(error);
+    json(response, error.statusCode || 500, { error: error.statusCode ? error.message : "Unable to save CRM workspace" });
+  }
 }

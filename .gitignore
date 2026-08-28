@@ -1,5 +1,9 @@
 node_modules/
 .pnpm-store/
 .env
+.env.*
+!.env.example
+!.env.testing.example
+!.env.production.example
 .DS_Store
 *.log

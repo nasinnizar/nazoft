@@ -6,10 +6,14 @@
   "packageManager": "pnpm@11.19.0",
   "scripts": {
     "dev": "sh scripts/node.sh --watch scripts/local-server.js",
+    "dev:testing": "NAZOFT_ENV_FILE=.env.testing sh scripts/node.sh --watch scripts/local-server.js",
     "start": "sh scripts/node.sh scripts/local-server.js",
     "build": "find api scripts src -type f -name '*.js' -exec sh scripts/node.sh --check {} \\; && sh scripts/node.sh scripts/check-client.js",
     "db:migrate": "sh scripts/node.sh scripts/migrate.js",
-    "check": "sh scripts/node.sh --check scripts/local-server.js && sh scripts/node.sh scripts/check-client.js"
+    "db:migrate:testing": "NAZOFT_ENV_FILE=.env.testing sh scripts/node.sh scripts/migrate.js",
+    "check": "sh scripts/node.sh --check scripts/local-server.js && sh scripts/node.sh scripts/check-client.js",
+    "lint": "pnpm run check",
+    "test": "sh scripts/node.sh --test tests/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

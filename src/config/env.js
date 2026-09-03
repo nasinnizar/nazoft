@@ -22,6 +22,10 @@ const schema = z.object({
     value => nonEmpty(value) ?? (nodeEnv === "production" ? "true" : "false"),
     z.enum(["true", "false"]).transform(value => value === "true"),
   ),
+  DATABASE_SSL_REJECT_UNAUTHORIZED: z.preprocess(
+    value => nonEmpty(value) ?? (nodeEnv === "production" ? "true" : "false"),
+    z.enum(["true", "false"]).transform(value => value === "true"),
+  ),
 });
 
 export const env = schema.parse({

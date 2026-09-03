@@ -387,7 +387,10 @@ input:focus-visible, textarea:focus-visible { outline: 0 !important; box-shadow:
 .notification-popover { position: fixed; z-index: 110; width: min(370px, calc(100vw - 24px)); max-height: min(560px, calc(100dvh - 90px)); overflow: auto; padding: 10px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.98); box-shadow: 0 24px 65px rgba(35, 58, 90, .19); backdrop-filter: blur(18px); }
 .notification-popover-head { display: flex; align-items: center; gap: 10px; padding: 7px 8px 11px; }
 .notification-popover-head h3 { margin: 0; font-size: 16px; }
-.notification-popover-head button { margin-left: auto; border: 0; background: transparent; color: var(--blue); font-weight: 760; }
+.notification-popover-actions { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.notification-popover-head button { border: 0; background: transparent; color: var(--blue); font-weight: 760; padding: 5px 2px; }
+.notification-popover-head button.notification-clear { color: var(--muted); }
+.notification-popover-head button:hover { color: var(--ink); }
 .notification-item { width: 100%; display: grid; grid-template-columns: 34px 1fr; gap: 10px; border: 0; border-radius: 13px; background: transparent; padding: 10px; color: var(--ink); text-align: left; }
 .notification-item:hover { background: var(--blue2); }
 .notification-item.unread { background: #f1f7ff; }

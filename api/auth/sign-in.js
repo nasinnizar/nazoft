@@ -4,7 +4,7 @@ import { requireSupabase } from "../../src/services/supabase.js";
 const credentials = z.object({ email: z.string().email(), password: z.string().min(8).max(128) });
 export default async function handler(request, response) {
   if (!method(request, response, "POST")) return;
-  if (!rateLimit(request, response, "sign-in")) return;
+  if (!(await rateLimit(request, response, "sign-in"))) return;
   try {
     const input = credentials.safeParse(await parseJson(request));
     if (!input.success) return json(response, 400, { error: "Enter a valid email and password of at least 8 characters." });

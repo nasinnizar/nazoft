@@ -4,7 +4,7 @@ import { z } from "zod";
 import { env } from "../config/env.js";
 import { requireAuth } from "../middleware/auth.js";
 import { createAdminClient } from "../services/supabase.js";
-import { addOrganizationMember, listOrganizationMembers, reassignOrganizationLeads, removeOrganizationMember, updateOrganizationMember } from "../services/workspace.js";
+import { addOrganizationMember, listOrganizationMembers, reassignOrganizationLeads, removeOrganizationMember, requireOrganizationAdmin, updateOrganizationMember } from "../services/workspace.js";
 
 export const usersRouter = Router();
 const inviteLimit = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: true, legacyHeaders: false });
@@ -40,6 +40,7 @@ usersRouter.post("/invite", inviteLimit, async (request, response, next) => {
   const input = inviteInput.safeParse(request.body);
   if (!input.success) return response.status(400).json({ error: "Enter a name, valid email address, and supported role." });
   try {
+    await requireOrganizationAdmin(request.user.id);
     const options = { data: { display_name: input.data.name } };
     if (env.APP_URL) options.redirectTo = env.APP_URL;
     const { data, error } = await createAdminClient().auth.admin.inviteUserByEmail(input.data.email, options);

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { env } from "../src/config/env.js";
 import { createAdminClient } from "../src/services/supabase.js";
-import { addOrganizationMember, listOrganizationMembers, reassignOrganizationLeads, removeOrganizationMember, updateOrganizationMember } from "../src/services/workspace.js";
+import { addOrganizationMember, listOrganizationMembers, reassignOrganizationLeads, removeOrganizationMember, requireOrganizationAdmin, updateOrganizationMember } from "../src/services/workspace.js";
 import { getUser, json, method, parseJson, rateLimit } from "../src/services/vercel-request.js";
 
 const inviteInput = z.object({
@@ -46,9 +46,10 @@ export default async function handler(request, response) {
       await removeOrganizationMember(user.id, input.data.id);
       response.statusCode = 204; response.end(); return;
     }
-    if (!rateLimit(request, response, "user-invite")) return;
+    if (!(await rateLimit(request, response, "user-invite"))) return;
     const input = inviteInput.safeParse(await parseJson(request));
     if (!input.success) return json(response, 400, { error: "Enter a name, valid email address, and supported role." });
+    await requireOrganizationAdmin(user.id);
     const options = { data: { display_name: input.data.name } };
     if (env.APP_URL) options.redirectTo = env.APP_URL;
     const { data, error } = await createAdminClient().auth.admin.inviteUserByEmail(input.data.email, options);

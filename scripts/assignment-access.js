@@ -30,7 +30,7 @@
   /* One counter is shared by the workspace, regardless of who owns each lead. */
   let recordCounters = {};
   try {
-    let source = window.__NAZOFT_REMOTE_STATE__ || JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    let source = window.__NAZOFT_AUTHENTICATED__ ? window.__NAZOFT_REMOTE_STATE__ : null;
     if (source?.recordCounters && typeof source.recordCounters === 'object') recordCounters = structuredClone(source.recordCounters);
   } catch (error) {}
 

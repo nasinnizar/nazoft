@@ -6,7 +6,7 @@ const credentials = z.object({ email: z.string().email(), password: z.string().m
 export default async function handler(request, response) {
   if (!method(request, response, "POST")) return;
   if (!env.ALLOW_PUBLIC_SIGNUP) return json(response, 403, { error: "Public registration is disabled. Ask an administrator for an invitation." });
-  if (!rateLimit(request, response, "sign-up")) return;
+  if (!(await rateLimit(request, response, "sign-up"))) return;
   try {
     const input = credentials.safeParse(await parseJson(request));
     if (!input.success) return json(response, 400, { error: "Enter a valid email and password of at least 8 characters." });

@@ -19,13 +19,27 @@ function leadBelongsTo(lead, email) {
   return normalizeEmail(lead?.ownerEmail) === normalizeEmail(email);
 }
 
-function filterWorkspaceForMember(state, email) {
+function filterWorkspaceForMember(state, identity) {
   if (!state || typeof state !== "object") return state;
-  const leads = Array.isArray(state.leads) ? state.leads.filter(lead => leadBelongsTo(lead, email)) : [];
-  const deletedLeads = Array.isArray(state.deletedLeads) ? state.deletedLeads.filter(lead => leadBelongsTo(lead, email)) : [];
-  const names = new Set([...leads, ...deletedLeads].map(lead => String(lead.name || "").toLowerCase()));
-  const feed = Array.isArray(state.feed) ? state.feed.filter(item => names.has(String(item?.[1] || "").toLowerCase())) : [];
-  return { ...state, leads, deletedLeads, feed };
+  const leads = Array.isArray(state.leads) ? state.leads.filter(lead => leadBelongsTo(lead, identity.email)) : [];
+  const deletedLeads = Array.isArray(state.deletedLeads) ? state.deletedLeads.filter(lead => leadBelongsTo(lead, identity.email)) : [];
+  const feed = leads.flatMap(lead => (lead.timeline || []).map(item => [
+    item.title || "Activity",
+    lead.name || "Lead",
+    item.detail || "",
+    item.when || "Recorded",
+    item.actor || identity.name || identity.email,
+  ]));
+  const { account: _account, users: _users, reportData: _reportData, ...shared } = state;
+  return {
+    ...shared,
+    leads,
+    deletedLeads,
+    feed,
+    account: { name: identity.name, email: identity.email, photo: "" },
+    users: [],
+    currentUserEmail: identity.email,
+  };
 }
 
 function mergeUniqueFeed(current = [], incoming = []) {
@@ -42,19 +56,29 @@ function mergeRecordCounters(current = {}, incoming = {}) {
   return merged;
 }
 
-function mergeWorkspaceForMember(currentState, incomingState, email) {
+const managerEditableKeys = new Set([
+  "library", "stages", "fields", "pipelines", "products", "groups", "checklists",
+  "sequences", "sources", "notifications", "followupDefaults", "metaConnected",
+]);
+
+function mergeWorkspaceForMember(currentState, incomingState, identity, role) {
   const current = currentState && typeof currentState === "object" ? currentState : {};
   const incoming = incomingState && typeof incomingState === "object" ? incomingState : {};
-  const otherLeads = (current.leads || []).filter(lead => !leadBelongsTo(lead, email));
-  const memberLeads = (incoming.leads || []).filter(lead => leadBelongsTo(lead, email));
-  const otherDeleted = (current.deletedLeads || []).filter(lead => !leadBelongsTo(lead, email));
-  const memberDeleted = (incoming.deletedLeads || []).filter(lead => leadBelongsTo(lead, email));
+  const merged = { ...current };
+  if (role === "manager") {
+    for (const key of managerEditableKeys) if (Object.hasOwn(incoming, key)) merged[key] = incoming[key];
+  }
+  const otherLeads = (current.leads || []).filter(lead => !leadBelongsTo(lead, identity.email));
+  const memberLeads = (incoming.leads || []).filter(lead => leadBelongsTo(lead, identity.email));
+  const otherDeleted = (current.deletedLeads || []).filter(lead => !leadBelongsTo(lead, identity.email));
+  const memberDeleted = (incoming.deletedLeads || []).filter(lead => leadBelongsTo(lead, identity.email));
+  const memberNames = new Set([...memberLeads, ...memberDeleted].map(lead => String(lead.name || "").toLowerCase()));
+  const memberFeed = (incoming.feed || []).filter(item => memberNames.has(String(item?.[1] || "").toLowerCase()));
   return {
-    ...current,
-    ...incoming,
+    ...merged,
     leads: [...memberLeads, ...otherLeads],
     deletedLeads: [...memberDeleted, ...otherDeleted],
-    feed: mergeUniqueFeed(current.feed, incoming.feed),
+    feed: mergeUniqueFeed(current.feed, memberFeed),
     recordCounters: mergeRecordCounters(current.recordCounters, incoming.recordCounters),
   };
 }
@@ -79,6 +103,15 @@ export async function ensureMembership(userId) {
     await client.query("select pg_advisory_xact_lock(hashtext($1))", [userId]);
     let membership = await findMembership(client, userId);
     if (!membership) {
+      const existing = await client.query(
+        `select status from public.organization_members where user_id = $1 order by created_at limit 1`,
+        [userId],
+      );
+      if (existing.rowCount) {
+        const error = new Error("Your organization access has been suspended. Contact an administrator.");
+        error.statusCode = 403;
+        throw error;
+      }
       const legacy = await client.query("select state from public.crm_user_workspaces where owner_id = $1", [userId]);
       const organization = await client.query(
         `insert into public.organizations (name, created_by, personal_owner_id)
@@ -118,6 +151,16 @@ export async function ensureMembership(userId) {
   }
 }
 
+export async function requireOrganizationAdmin(userId) {
+  const membership = await ensureMembership(userId);
+  if (membership.role !== "admin") {
+    const error = new Error("Administrator access is required to manage users.");
+    error.statusCode = 403;
+    throw error;
+  }
+  return membership;
+}
+
 export async function getWorkspace(userId) {
   const membership = await ensureMembership(userId);
   const { rows } = await pool.query(
@@ -130,7 +173,7 @@ export async function getWorkspace(userId) {
   const identity = await getMemberIdentity(userId);
   return {
     ...workspace,
-    state: membership.role === "admin" ? workspace.state : filterWorkspaceForMember(workspace.state, identity.email),
+    state: membership.role === "admin" ? workspace.state : filterWorkspaceForMember(workspace.state, identity),
     organization: { id: membership.organization_id, name: membership.name, role: membership.role },
   };
 }
@@ -161,7 +204,7 @@ export async function saveWorkspace(userId, state) {
       [membership.organization_id],
     );
     if (!current.rowCount) throw new Error("Organization workspace is unavailable.");
-    const merged = mergeWorkspaceForMember(current.rows[0].state, state, identity.email);
+    const merged = mergeWorkspaceForMember(current.rows[0].state, state, identity, membership.role);
     await client.query(
       `update public.organization_workspaces set state = $2::jsonb, updated_at = now() where organization_id = $1`,
       [membership.organization_id, JSON.stringify(merged)],

@@ -57,14 +57,16 @@ authRouter.post("/exchange", authLimit, async (request, response) => {
   const input = exchangeInput.safeParse(request.body);
   if (!input.success) return response.status(400).json({ error: "The email sign-in link is incomplete or invalid." });
   const client = requireSupabase();
-  const { data, error } = await client.auth.getUser(input.data.accessToken);
-  if (error || !data.user) return response.status(401).json({ error: "The email sign-in link is invalid or expired." });
-  setSessionCookies(response, {
-    access_token: input.data.accessToken,
+  const { data: accessData, error: accessError } = await client.auth.getUser(input.data.accessToken);
+  if (accessError || !accessData.user) return response.status(401).json({ error: "The email sign-in link is invalid or expired." });
+  const { data: refreshed, error: refreshError } = await createSessionClient(input.data.accessToken).auth.refreshSession({
     refresh_token: input.data.refreshToken,
-    expires_in: input.data.expiresIn,
   });
-  response.json({ user: { id: data.user.id, email: data.user.email } });
+  if (refreshError || !refreshed.session || !refreshed.user || refreshed.user.id !== accessData.user.id) {
+    return response.status(401).json({ error: "The email sign-in session is invalid or expired." });
+  }
+  setSessionCookies(response, refreshed.session);
+  response.json({ user: { id: refreshed.user.id, email: refreshed.user.email } });
 });
 
 authRouter.post("/otp/verify", authLimit, async (request, response) => {
@@ -86,9 +88,16 @@ authRouter.post("/password", authLimit, requireAuth, async (request, response) =
   response.status(204).end();
 });
 
-authRouter.post("/sign-out", (_request, response) => {
-  clearSessionCookies(response);
-  response.status(204).end();
+authRouter.post("/sign-out", async (request, response) => {
+  try {
+    const accessToken = getRequestAccessToken(request);
+    if (accessToken) await createSessionClient(accessToken).auth.signOut({ scope: "local" });
+  } catch (error) {
+    console.warn("Unable to revoke the remote session during sign-out:", error.message);
+  } finally {
+    clearSessionCookies(response);
+    response.status(204).end();
+  }
 });
 
 authRouter.get("/session", requireAuth, (request, response) => response.json({ user: { id: request.user.id, email: request.user.email } }));

@@ -2,7 +2,7 @@ import { getUser, json, method, parseJson } from "../src/services/vercel-request
 import { getWorkspace, saveWorkspace } from "../src/services/workspace.js";
 
 export default async function handler(request, response) {
-  if (!["GET", "PUT"].includes(request.method)) return method(request, response, "GET");
+  if (!method(request, response, ["GET", "PUT"])) return;
   try {
     const user = await getUser(request, response);
     if (!user) return json(response, 401, { error: "Authentication required" });

@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { optionalAuth } from "./middleware/auth.js";
+import { protectMutation } from "./middleware/request-security.js";
 import { authRouter } from "./routes/auth.js";
 import { workspaceRouter } from "./routes/workspace.js";
 import { usersRouter } from "./routes/users.js";
@@ -32,8 +33,16 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
+  frameguard: { action: "deny" },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
 }));
 app.use(cookieParser());
+app.use("/api", (_request, response, next) => {
+  response.set("Cache-Control", "private, no-store");
+  response.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  next();
+});
+app.use("/api", protectMutation);
 app.use(express.json({ limit: "2mb" }));
 
 app.get("/health", async (_request, response) => {
@@ -62,6 +71,7 @@ app.get(["/api/bootstrap.js", "/bootstrap.js"], optionalAuth, bootstrapHandler);
 app.use("/api", workspaceRouter);
 
 app.use("/styles", express.static(path.join(root, "styles"), { fallthrough: false, index: false, maxAge: "1h" }));
+app.use("/assets", express.static(path.join(root, "assets"), { fallthrough: false, index: false, maxAge: "1h" }));
 app.get("/scripts/crm-experience.js", (_request, response) => {
   response.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(root, "scripts", "crm-experience.js"));
 });
@@ -70,6 +80,12 @@ app.get("/scripts/assignment-access.js", (_request, response) => {
 });
 app.get("/scripts/mobile-sidebar.js", (_request, response) => {
   response.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(root, "scripts", "mobile-sidebar.js"));
+});
+app.get("/scripts/report-files.js", (_request, response) => {
+  response.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(root, "scripts", "report-files.js"));
+});
+app.get("/scripts/import-export.js", (_request, response) => {
+  response.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(root, "scripts", "import-export.js"));
 });
 app.get("/nazoft-logo.svg", (_request, response) => response.sendFile(path.join(root, "nazoft-logo.svg")));
 app.get("/nazoft-crm-wordmark.svg", (_request, response) => response.sendFile(path.join(root, "nazoft-crm-wordmark.svg")));

@@ -6,7 +6,7 @@ const inputSchema = z.object({ password: z.string().min(8).max(128) });
 
 export default async function handler(request, response) {
   if (!method(request, response, "POST")) return;
-  if (!rateLimit(request, response, "password-update", 6, 15 * 60_000)) return;
+  if (!(await rateLimit(request, response, "password-update", 6, 15 * 60_000))) return;
   try {
     const user = await getUser(request, response);
     if (!user) return json(response, 401, { error: "Your session has expired. Verify your email again." });

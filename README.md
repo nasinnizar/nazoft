@@ -46,5 +46,8 @@ Vercel serves the static client and runs files in `api/` as serverless functions
 - `APP_URL`
 - `ALLOW_PUBLIC_SIGNUP=false`
 - `COOKIE_SECURE=true`
+- `DATABASE_SSL_REJECT_UNAUTHORIZED=true`
 
 Run `pnpm db:migrate` from a trusted environment when new migration files are added. Migrations are tracked in `crm_schema_migrations` and must remain additive unless a destructive change is explicitly reviewed.
+
+For production abuse protection, keep migration `003_security_rate_limits.sql` applied and add Vercel Firewall rate-limit rules for `/api/auth/*` as a second layer. Application responses are private/no-store, state-changing browser requests must match the CRM origin, and session cookies are HttpOnly, SameSite, Secure in production, path-locked, and high priority.

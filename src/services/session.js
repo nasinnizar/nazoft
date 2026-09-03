@@ -5,6 +5,7 @@ const cookieOptions = {
   sameSite: "lax",
   secure: env.COOKIE_SECURE,
   path: "/",
+  priority: "high",
 };
 
 export function setSessionCookies(response, session) {

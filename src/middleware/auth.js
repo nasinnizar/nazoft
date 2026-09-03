@@ -7,7 +7,10 @@ async function resolveUser(request, response) {
   const token = bearer || request.cookies.nazoft_access_token;
   if (token) {
     const { data, error } = await supabase.auth.getUser(token);
-    if (!error && data.user) return data.user;
+    if (!error && data.user) {
+      request.authAccessToken = token;
+      return data.user;
+    }
   }
 
   // Bearer-token callers own their refresh lifecycle. Browser sessions can be
@@ -20,12 +23,13 @@ async function resolveUser(request, response) {
     return null;
   }
   setSessionCookies(response, data.session);
+  request.authAccessToken = data.session.access_token;
   return data.user;
 }
 
 export function getRequestAccessToken(request) {
   const bearer = request.get("authorization")?.replace(/^Bearer\s+/i, "");
-  return bearer || request.cookies.nazoft_access_token || null;
+  return request.authAccessToken || bearer || request.cookies.nazoft_access_token || null;
 }
 
 export async function optionalAuth(request, response, next) {

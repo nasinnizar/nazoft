@@ -6,7 +6,7 @@ const inputSchema = z.object({ email: z.string().email(), token: z.string().rege
 
 export default async function handler(request, response) {
   if (!method(request, response, "POST")) return;
-  if (!rateLimit(request, response, "otp-verify")) return;
+  if (!(await rateLimit(request, response, "otp-verify"))) return;
   try {
     const input = inputSchema.safeParse(await parseJson(request));
     if (!input.success) return json(response, 400, { error: "Enter the email address and verification code from your message." });

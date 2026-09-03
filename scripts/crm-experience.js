@@ -78,7 +78,7 @@
     let items = notificationInbox(), unread = items.filter(item => item.unread).length;
     notificationButton.querySelector('.notification-badge')?.remove();
     if (unread) notificationButton.insertAdjacentHTML('beforeend', `<span class="notification-badge">${Math.min(unread, 99)}</span>`);
-    notificationPopover.innerHTML = `<div class="notification-popover-head"><h3>Notifications</h3>${unread ? '<button type="button" data-notification-read>Mark all read</button>' : ''}</div>${items.length ? items.slice(0, 30).map(item => `<button type="button" class="notification-item ${item.unread ? 'unread' : ''}" data-notification-id="${safe(item.id)}"><span class="notification-item-icon">${uiIcon(notificationIcon(item.kind))}</span><span><b>${safe(item.title)}</b><small>${safe(item.body)}</small><small>${safe(item.when || 'Just now')}</small></span></button>`).join('') : '<div class="notification-empty">You are all caught up.</div>'}`;
+    notificationPopover.innerHTML = `<div class="notification-popover-head"><h3>Notifications</h3><div class="notification-popover-actions">${unread ? '<button type="button" data-notification-read>Mark all read</button>' : ''}${items.length ? '<button type="button" class="notification-clear" data-notification-clear>Clear all</button>' : ''}</div></div>${items.length ? items.slice(0, 30).map(item => `<button type="button" class="notification-item ${item.unread ? 'unread' : ''}" data-notification-id="${safe(item.id)}"><span class="notification-item-icon">${uiIcon(notificationIcon(item.kind))}</span><span><b>${safe(item.title)}</b><small>${safe(item.body)}</small><small>${safe(item.when || 'Just now')}</small></span></button>`).join('') : '<div class="notification-empty">You are all caught up.</div>'}`;
   }
 
   function openNotificationTarget(item) {
@@ -116,6 +116,13 @@
   };
   notificationPopover.onclick = event => {
     event.stopPropagation();
+    if (event.target.closest('[data-notification-clear]')) {
+      accountPreferences.notifications.inbox = [];
+      saveAccountPreferences();
+      renderNotificationCenter();
+      toast('Notifications cleared');
+      return;
+    }
     if (event.target.closest('[data-notification-read]')) {
       notificationInbox().forEach(item => item.unread = false);
       saveAccountPreferences(); renderNotificationCenter(); return;
@@ -150,7 +157,7 @@
 
   let workUsage = [];
   try {
-    let source = window.__NAZOFT_REMOTE_STATE__ || JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    let source = window.__NAZOFT_AUTHENTICATED__ ? window.__NAZOFT_REMOTE_STATE__ : null;
     if (Array.isArray(source?.workUsage)) workUsage = source.workUsage;
   } catch (error) {}
   const currentWorkspaceStateExperienceBase = currentWorkspaceState;

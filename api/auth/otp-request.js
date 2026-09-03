@@ -7,7 +7,7 @@ const inputSchema = z.object({ email: z.string().email(), purpose: z.enum(["sign
 
 export default async function handler(request, response) {
   if (!method(request, response, "POST")) return;
-  if (!rateLimit(request, response, "otp-request", 6, 15 * 60_000)) return;
+  if (!(await rateLimit(request, response, "otp-request", 6, 15 * 60_000))) return;
   try {
     const input = inputSchema.safeParse(await parseJson(request));
     if (!input.success) return json(response, 400, { error: "Enter a valid email address." });

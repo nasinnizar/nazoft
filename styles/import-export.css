@@ -1,0 +1,123 @@
+.import-mapping-modal { width: min(900px, calc(100vw - 28px)); }
+.mapping-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: color-mix(in srgb, var(--blue2) 42%, var(--white)); }
+.mapping-field { display: grid; grid-template-columns: minmax(130px, .8fr) minmax(160px, 1.2fr); gap: 10px; align-items: center; min-width: 0; }
+.mapping-field > span { font-size: 12px; font-weight: 760; }
+.mapping-field em { color: var(--red); font-size: 9px; font-style: normal; text-transform: uppercase; letter-spacing: .06em; }
+.mapping-field .select-ui { min-width: 0; width: 100%; }
+.mapping-preview { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.mapping-preview-head { display: flex; justify-content: space-between; gap: 12px; padding: 11px 13px; background: var(--blue2); }
+.mapping-preview-head span { color: var(--muted); font-size: 11px; }
+.mapping-preview .table-scroll { max-height: 190px; }
+.mapping-preview .table { min-width: 680px; }
+.mapping-preview .table th, .mapping-preview .table td { white-space: nowrap; padding: 9px 11px; }
+.data-action-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+.data-action-card { min-height: 126px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: var(--white); color: var(--ink); text-align: left; transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+.data-action-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--blue) 45%, var(--line)); background: var(--blue2); box-shadow: 0 10px 24px #416a9e16; }
+.data-action-card .ui-icon { width: 21px; height: 21px; color: var(--blue); }
+.data-action-card b, .data-action-card small { display: block; }
+.data-action-card small { margin-top: 4px; color: var(--muted); line-height: 1.4; }
+.brand-report-card { display: flex; align-items: center; gap: 18px; margin: 18px 0; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); }
+.brand-report-card h3, .brand-report-card p { margin: 0; }
+.brand-report-card p { margin-top: 5px; }
+.company-logo-preview { width: 180px; height: 100px; flex: 0 0 180px; display: grid; place-items: center; align-content: center; gap: 7px; border: 1px dashed var(--line); border-radius: 14px; background: var(--blue2); color: var(--muted); font-size: 11px; }
+.company-logo-preview .ui-icon { width: 25px; height: 25px; }
+.company-logo-preview.has-logo { background: #fff; border-style: solid; }
+.company-logo-preview img { display: block; max-width: 150px; max-height: 72px; object-fit: contain; }
+.temperature.not.set { background: #eef2f7; color: #6c788a; }
+#drawer #clientTimeline .timeline-important { display: grid; gap: 2px; margin: 0 0 10px; padding: 14px 16px 14px 26px; border: 1px solid var(--line); border-left: 3px solid var(--blue); border-radius: 12px; background: color-mix(in srgb, var(--blue2) 45%, var(--white)); }
+#drawer #clientTimeline .timeline-important::before { left: -7px; top: 17px; box-shadow: 0 0 0 4px var(--white); }
+.timeline-message { border-left-color: #36a66d; }
+.timeline-call { border-left-color: #6e9fdf; }
+.timeline-email { border-left-color: #8a70cf; }
+.timeline-followup { border-left-color: #d49a47; }
+.timeline-meeting { border-left-color: #d66f7a; }
+html[data-theme="dark"] .data-action-card, html[data-theme="dark"] .brand-report-card { background: #0d0d0d; }
+html[data-theme="dark"] .mapping-layout, html[data-theme="dark"] .timeline-important { background: #111; }
+
+/* Full-page client workspace. The CRM underneath is completely fixed while
+   this page owns scrolling, preventing scroll chaining at either edge. */
+html:has(body.lead-page-open), body.lead-page-open { overflow: hidden !important; overscroll-behavior: none; }
+body.lead-page-open { position: fixed; inset: 0; width: 100%; }
+body.lead-page-open #drawerBackdrop { display: none !important; }
+body.lead-page-open #notificationPopover { z-index: 140; }
+#drawer.drawer.open {
+  --lead-shell-top: 66px;
+  --lead-shell-left: 238px;
+  inset: var(--lead-shell-top) 0 0 var(--lead-shell-left) !important;
+  width: auto !important;
+  max-width: none !important;
+  height: calc(100dvh - var(--lead-shell-top)) !important;
+  padding: 0 clamp(22px, 2.5vw, 42px) 42px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+  grid-template-areas: "header header" "controls controls" "summary followup" "info notes" "timeline timeline";
+  align-content: start;
+  gap: 16px;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--bg) !important;
+  box-shadow: none !important;
+}
+.app.sidebar-collapsed ~ #drawer.drawer.open { --lead-shell-left: 76px; }
+#drawer > .modalhead {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  min-height: 74px;
+  margin: 0 !important;
+  padding: 14px 0 13px !important;
+  display: flex;
+  align-items: center;
+  column-gap: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent) !important;
+  background: color-mix(in srgb, var(--bg) 93%, transparent);
+  backdrop-filter: blur(16px);
+}
+#drawer > .modalhead > div { display: grid; gap: 3px; min-width: 0; }
+#drawer > .modalhead .eyebrow { margin: 0; line-height: 1.15; }
+#drawer > .modalhead h2 { margin: 0 !important; line-height: 1.15; }
+#drawer > .leadtop { grid-area: controls; min-width: 0; padding: 4px 0 2px; align-items: flex-end; }
+#drawer > .lead-summary-panel { grid-area: summary; }
+#drawer > .lead-followup-panel { grid-area: followup; }
+#drawer > .lead-info-panel { grid-area: info; }
+#drawer > .lead-notes-panel { grid-area: notes; }
+#drawer > .lead-timeline-panel { grid-area: timeline; }
+#drawer > .panel { min-width: 0; margin: 0 !important; }
+#drawer .lead-page-close { order: -1; flex: 0 0 40px; margin: 0 !important; width: 40px !important; height: 40px !important; font-size: 22px; }
+#drawer .modalhead > div { order: 2; }
+#drawer .modalhead .lead-page-close + div { order: 2; }
+#drawer .modalhead .close:last-child { margin-left: 0; }
+#drawer .lead-page-control { display: grid; gap: 4px; min-width: 190px; }
+#drawer .lead-page-control > span { color: var(--muted); font-size: 9px; font-weight: 820; letter-spacing: .08em; text-transform: uppercase; }
+#drawer .lead-stage-control .select-ui { width: 100%; min-width: 190px; }
+#drawer .lead-stage-control .pretty-select-trigger { width: 100%; }
+#drawer .lead-temperature-control { min-width: 170px; }
+#drawer .lead-temperature-control .select-ui,
+#drawer .lead-temperature-control .pretty-select-trigger { width: 100%; min-width: 170px; }
+#drawer .lead-temperature-control .pretty-select-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#drawer .lead-summary-panel .lead-quality { gap: 0; }
+#drawer .lead-summary-panel .lead-quality:empty { display: none; }
+html[data-theme="dark"] #drawer.drawer.open { background: #050505 !important; }
+html[data-theme="dark"] #drawer > .modalhead { background: rgba(5, 5, 5, .93); }
+@media (max-width: 760px) {
+  .mapping-layout, .data-action-grid { grid-template-columns: 1fr; }
+  .mapping-field { grid-template-columns: 1fr; gap: 5px; }
+  .brand-report-card { align-items: stretch; flex-direction: column; }
+  .company-logo-preview { width: 100%; flex-basis: 100px; }
+  #drawer.drawer.open { grid-template-columns: 1fr; grid-template-areas: "header" "controls" "summary" "followup" "info" "notes" "timeline"; padding: 0 14px 30px !important; gap: 12px; }
+  #drawer > .leadtop { align-items: flex-end; flex-wrap: wrap; }
+  #drawer > .modalhead { min-height: 66px; padding: 11px 0 10px !important; column-gap: 11px; }
+  #drawer .lead-page-close { flex-basis: 38px; width: 38px !important; height: 38px !important; }
+  #drawer .lead-page-control { flex: 1 1 180px; }
+  #drawer .lead-stage-control .select-ui,
+  #drawer .lead-temperature-control,
+  #drawer .lead-temperature-control .select-ui,
+  #drawer .lead-temperature-control .pretty-select-trigger { min-width: 0; }
+}
+@media (max-width: 980px) {
+  #drawer.drawer.open, .app.sidebar-collapsed ~ #drawer.drawer.open { --lead-shell-left: 0px; }
+}
+@media (prefers-reduced-motion: reduce) { .data-action-card { transition: none; } }

@@ -21,8 +21,10 @@ function appendCookie(response, value) {
 }
 
 export function setSessionCookies(response, session) {
-  appendCookie(response, `nazoft_access_token=${encodeURIComponent(session.access_token)}; ${baseCookie}; Max-Age=${Math.max(1, session.expires_in || 3600)}`);
-  appendCookie(response, `nazoft_refresh_token=${encodeURIComponent(session.refresh_token)}; ${baseCookie}; Max-Age=${30 * 24 * 60 * 60}`);
+  const accessSeconds = Math.max(1, session.expires_in || 3600);
+  const refreshSeconds = 30 * 24 * 60 * 60;
+  appendCookie(response, `nazoft_access_token=${encodeURIComponent(session.access_token)}; ${baseCookie}; Max-Age=${accessSeconds}; Expires=${new Date(Date.now() + accessSeconds * 1000).toUTCString()}`);
+  appendCookie(response, `nazoft_refresh_token=${encodeURIComponent(session.refresh_token)}; ${baseCookie}; Max-Age=${refreshSeconds}; Expires=${new Date(Date.now() + refreshSeconds * 1000).toUTCString()}`);
 }
 
 export function clearSessionCookies(response) {
@@ -132,14 +134,16 @@ export async function rateLimit(request, response, scope = "auth", limit = 10, w
 export function json(response, status, body) {
   response.statusCode = status;
   response.setHeader("Content-Type", "application/json; charset=utf-8");
-  response.setHeader("Cache-Control", "private, no-store");
+  response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
+  response.setHeader("Pragma", "no-cache");
+  response.setHeader("Expires", "0");
   response.end(JSON.stringify(body));
 }
 
 export function method(request, response, expected) {
   const allowed = Array.isArray(expected) ? expected : [expected];
   if (allowed.includes(request.method)) {
-    response.setHeader("Vary", "Origin, Sec-Fetch-Site");
+    response.setHeader("Vary", "Origin, Sec-Fetch-Site, Cookie");
     if (mutationIsSameOrigin(request)) return true;
     json(response, 403, { error: "This request was blocked because it did not originate from the CRM." });
     return false;
@@ -155,6 +159,9 @@ export async function bootstrap(request, response) {
   const script = `window.__NAZOFT_AUTHENTICATED__=${Boolean(user)};window.__NAZOFT_USER__=${JSON.stringify(user ? { id: user.id, email: user.email } : null).replaceAll("<", "\\u003c")};window.__NAZOFT_ORGANIZATION__=${JSON.stringify(workspace?.organization ?? null).replaceAll("<", "\\u003c")};window.__NAZOFT_REMOTE_STATE__=${JSON.stringify(workspace?.state ?? null).replaceAll("<", "\\u003c")};`;
   response.statusCode = 200;
   response.setHeader("Content-Type", "application/javascript; charset=utf-8");
-  response.setHeader("Cache-Control", "private, no-store");
+  response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
+  response.setHeader("Pragma", "no-cache");
+  response.setHeader("Expires", "0");
+  response.setHeader("Vary", "Origin, Sec-Fetch-Site, Cookie");
   response.end(script);
 }

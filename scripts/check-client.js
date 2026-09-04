@@ -14,7 +14,7 @@ const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, ""
 const ids = [...staticMarkup.matchAll(/\sid=["']([^"']+)["']/g)].map(match => match[1]);
 const duplicates = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
 if (duplicates.length) throw new Error(`Duplicate HTML ids: ${duplicates.join(", ")}`);
-for (const required of ["/api/bootstrap.js?v=3", "/styles/audit-polish.css", "/scripts/report-files.js", "/scripts/import-export.js", "id=\"signIn\"", "id=\"forgotPasswordLink\"", "function ensureProposalNumber(", "Generated at Proposal sent", "aria-keyshortcuts=\"Meta+K Control+K\"", "placeholder=\"SmartFind\"", "lead-product-field", "Select after first contact", "id='leadTempQuickFilter'", "temperature-choice", "contact-choice", "function defaultNewLeadFollowAt("]) {
+for (const required of ["/api/bootstrap.js?v=4", "/styles/audit-polish.css", "/scripts/report-files.js", "/scripts/import-export.js", "/scripts/regional-settings.js", "id=\"signIn\"", "id=\"forgotPasswordLink\"", "function ensureProposalNumber(", "Generated at Proposal sent", "aria-keyshortcuts=\"Meta+K Control+K\"", "placeholder=\"SmartFind\"", "lead-product-field", "Select after first contact", "id='leadTempQuickFilter'", "temperature-choice", "contact-choice", "function defaultNewLeadFollowAt("]) {
   if (!html.includes(required)) throw new Error(`Missing required client contract: ${required}`);
 }
 if (html.includes("Prototype OTP") || html.includes("Prototype verification code")) {

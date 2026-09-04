@@ -41,10 +41,27 @@ test("login failures remain visible and accessible", async () => {
 test("successful authentication never flashes the sign-in form again", async () => {
   const html = await read("index.html");
   assert.match(html, /function showAuthTransition/);
-  assert.match(html, /await authApi\('\/api\/auth\/sign-in'.*navigating=true;showAuthTransition\(\);location\.reload\(\)/s);
+  assert.match(html, /await authApi\('\/api\/auth\/sign-in'.*await authenticatedSessionReady\(\).*navigating=true.*showAuthTransition\(\);location\.replace\(freshWorkspaceLocation\(\)\)/s);
+  assert.match(html, /credentials:'same-origin',cache:'no-store'/);
+  assert.match(html, /nazoft-session-recovery/);
   assert.match(html, /finally\{if\(!navigating\)setAuthLoading\(button,false\)\}/);
   assert.match(html, /initialLoader\?\.classList\.add\('is-ready'\)/);
   assert.doesNotMatch(html, /1150/);
+});
+
+test("regional settings cover country, currency, locale, and time zone", async () => {
+  const html = await read("index.html");
+  const app = await read("src/app.js");
+  const regional = await read("scripts/regional-settings.js");
+  assert.match(html, /regional-settings\.js\?v=1/);
+  assert.match(app, /\/scripts\/regional-settings\.js/);
+  assert.match(regional, /Intl\.supportedValuesOf/);
+  assert.match(regional, /Business country/);
+  assert.match(regional, /Currency/);
+  assert.match(regional, /Time zone/);
+  assert.match(regional, /Number & date language/);
+  assert.match(regional, /accountPreferences/);
+  assert.match(regional, /buildReportSheets/);
 });
 
 test("switching users starts a fresh session without a stale-session return", async () => {
@@ -209,6 +226,13 @@ test("expired browser sessions use the refreshed access token", async () => {
   assert.match(expressAuth, /request\.authAccessToken \|\| bearer/);
   assert.match(vercel, /request\.nazoftAccessToken = data\.session\.access_token/);
   assert.match(vercel, /request\.nazoftAccessToken \|\| bearer/);
+});
+
+test("Vercel session responses cannot reuse an unauthenticated bootstrap", async () => {
+  const vercel = await read("src/services/vercel-request.js");
+  assert.match(vercel, /no-store, no-cache, must-revalidate/);
+  assert.match(vercel, /Vary", "Origin, Sec-Fetch-Site, Cookie/);
+  assert.match(vercel, /Expires=\$\{new Date\(Date\.now\(\) \+ accessSeconds/);
 });
 
 test("email-link exchange binds access and refresh tokens to the same user", async () => {

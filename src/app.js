@@ -90,6 +90,9 @@ app.get("/scripts/import-export.js", (_request, response) => {
 app.get("/scripts/regional-settings.js", (_request, response) => {
   response.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(root, "scripts", "regional-settings.js"));
 });
+app.get("/scripts/lead-workspace-controls.js", (_request, response) => {
+  response.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(root, "scripts", "lead-workspace-controls.js"));
+});
 app.get("/nazoft-logo.svg", (_request, response) => response.sendFile(path.join(root, "nazoft-logo.svg")));
 app.get("/nazoft-crm-wordmark.svg", (_request, response) => response.sendFile(path.join(root, "nazoft-crm-wordmark.svg")));
 app.get("/", (_request, response) => response.sendFile(path.join(root, "index.html")));

@@ -64,6 +64,19 @@ test("regional settings cover country, currency, locale, and time zone", async (
   assert.match(regional, /buildReportSheets/);
 });
 
+test("lead workspace provides direct group and sequence controls", async () => {
+  const html = await read("index.html");
+  const app = await read("src/app.js");
+  const controls = await read("scripts/lead-workspace-controls.js");
+  assert.match(html, /lead-workspace-controls\.js\?v=1/);
+  assert.match(html, /lead-workspace-controls\.css\?v=1/);
+  assert.match(app, /\/scripts\/lead-workspace-controls\.js/);
+  assert.match(controls, /drawerGroupSelect/);
+  assert.match(controls, /drawerSequenceSelect/);
+  assert.match(controls, /lead-followup-panel/);
+  assert.match(controls, /lead-primary-actions/);
+});
+
 test("switching users starts a fresh session without a stale-session return", async () => {
   const html = await read("index.html");
   assert.doesNotMatch(html, /Return to current session|cancelSwitchUser/);

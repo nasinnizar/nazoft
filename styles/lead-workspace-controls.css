@@ -1,0 +1,96 @@
+#drawer .drawer-context-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+#drawer .drawer-context-row > .muted {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink);
+}
+#drawer #drawerGroups[hidden],
+#drawer #drawerSequence[hidden] { display: none !important; }
+#drawer .lead-association-controls {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+#drawer .lead-association-controls .select-ui {
+  flex: 1 1 220px;
+  width: auto;
+  min-width: 0;
+}
+#drawer .lead-association-controls .pretty-select-trigger {
+  width: 100%;
+  min-height: 42px;
+}
+#drawer .lead-association-controls > .btn {
+  min-height: 42px;
+  flex: 0 0 auto;
+  padding-inline: 13px;
+}
+#drawer .drawer-context-help {
+  display: block;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+#drawer .lead-followup-panel .followup-qualification {
+  margin: 18px 0 0;
+  padding: 17px 0 0;
+  border-top: 1px solid var(--line);
+}
+#drawer .lead-followup-panel .score-heading {
+  margin-bottom: 12px;
+}
+#drawer .lead-followup-panel .score-explanation {
+  margin-top: 8px;
+  line-height: 1.55;
+}
+#drawer .lead-primary-actions {
+  gap: 9px !important;
+  flex-wrap: wrap;
+}
+#drawer .lead-primary-actions .btn {
+  min-height: 44px;
+  padding: 10px 15px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+#drawer .lead-primary-actions #quickResponse {
+  padding-inline: 17px;
+}
+html[data-theme="dark"] #drawer .drawer-context-row,
+html[data-theme="dark"] #drawer .lead-followup-panel .followup-qualification {
+  border-color: #252525;
+}
+@media (max-width: 760px) {
+  #drawer .lead-association-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  #drawer .lead-association-controls .select-ui,
+  #drawer .lead-association-controls > .btn {
+    width: 100%;
+    flex-basis: auto;
+  }
+  #drawer .lead-primary-actions .btn {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 132px;
+  }
+}
+@media (max-width: 390px) {
+  #drawer .lead-primary-actions .btn {
+    flex-basis: 100%;
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #drawer .lead-association-controls .pretty-select-trigger,
+  #drawer .lead-primary-actions .btn { transition: none; }
+}

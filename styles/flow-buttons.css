@@ -1,0 +1,36 @@
+/* FlowButton adapted to Nazoft's native UI; no event handlers or labels replaced. */
+html body button.crm-flow-button.btn {
+  --flow-color:var(--blue);
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden;
+  border-radius:100px!important;
+  padding-inline:16px!important;
+  min-height:36px;
+  transition:border-radius .2s ease-out,color .15s,transform .12s!important;
+}
+html body button.crm-flow-button.btn.danger { --flow-color:var(--red); }
+html body button.crm-flow-button.btn::before {
+  content:'';
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  background:var(--flow-color);
+  clip-path:circle(0% at 50% 50%);
+  transition:clip-path .22s cubic-bezier(.19,1,.22,1);
+  pointer-events:none;
+}
+html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible) {
+  border-radius:100px!important;
+  border-color:transparent!important;
+  color:white!important;
+}
+html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible)::before { clip-path:circle(150% at 50% 50%); }
+html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):active { transform:scale(.97)!important; }
+html body button.crm-flow-button.btn > .ui-icon { color:inherit!important; }
+html body button.crm-flow-button.btn:disabled,html body button.crm-flow-button.btn[aria-disabled=true] { transform:none!important; cursor:not-allowed!important; }
+html body button:focus-visible { outline-color:var(--blue)!important; }
+@media(prefers-reduced-motion:reduce) {
+  html body button.crm-flow-button.btn,html body button.crm-flow-button.btn::before { transition:none!important; }
+  html body button.crm-flow-button.btn:not(:disabled):active { transform:none!important; }
+}

@@ -1,0 +1,119 @@
+/* Keep the logo fixed while the rail changes size; never squash the wordmark. */
+@media(min-width:981px) {
+  .app { transition:grid-template-columns .22s cubic-bezier(.2,.8,.2,1)!important; }
+  .app .side { transition:width .22s cubic-bezier(.2,.8,.2,1)!important; }
+  .app .side > .brand { position:relative; justify-content:flex-start; overflow:hidden; gap:10px; }
+  .app .side > .brand .brand-logo { flex:0 0 34px; }
+  .app .side > .brand .sidebar-wordmark { flex:0 0 126px; max-width:126px!important; transition:opacity .14s ease,transform .22s ease!important; }
+  .app.sidebar-collapsed .side > .brand { justify-content:flex-start; }
+  .app.sidebar-collapsed .side > .brand .sidebar-wordmark { display:block; opacity:0; }
+  .app .side .nav { min-height:0; overflow-x:hidden; overflow-y:auto; padding-bottom:12px; }
+  .app .side .nav button { flex-shrink:0; justify-content:flex-start!important; overflow:hidden; white-space:nowrap; }
+  .app .side .nav button .nav-icon { flex:0 0 18px!important; }
+  .app .side .nav button > span { display:inline-block!important; width:auto!important; min-width:145px; opacity:1; transform:translateX(0); transition:opacity .14s ease,transform .22s ease; }
+  .app.sidebar-collapsed .side .nav button > span {
+    width:0!important;
+    min-width:0!important;
+    max-width:0!important;
+    overflow:hidden!important;
+    opacity:0;
+    transform:translateX(-5px);
+    pointer-events:none;
+  }
+  .app .side .nav button:hover > span { transform:translateX(3px); }
+  .app .side .profile { flex-shrink:0; }
+  .app.sidebar-collapsed .side .nav button {
+    width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    margin-inline:auto!important;
+    padding:0!important;
+    gap:0!important;
+    justify-content:center!important;
+    border-radius:50%!important;
+  }
+  .app.sidebar-collapsed .side .nav button.active { box-shadow:none!important; }
+  .app.sidebar-collapsed .side .nav button .nav-icon { margin:0!important; }
+}
+#sidebarToggle,#notificationButton {
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  display:inline-grid!important;
+  place-items:center!important;
+}
+#accountMenu .theme-options { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:4px 0; }
+#accountMenu .theme-options button { width:100%; height:44px; min-width:0; padding:0!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:0!important; }
+#accountMenu .theme-options button > span { margin:0!important; width:20px!important; height:20px!important; flex:0 0 20px!important; }
+#settingsPane { min-width:0; overflow-wrap:anywhere; }
+#settingsPane .user-row { grid-template-columns:40px minmax(0,1fr) auto auto; gap:12px; }
+#settingsPane .user-row > .settings-actions { grid-column:2 / -1; width:100%; flex-wrap:wrap; justify-content:flex-start; margin:0; }
+#settingsPane .toolbar { flex-wrap:wrap; gap:16px; }
+#settingsPane .toolbar > div { min-width:0; flex:1 1 220px; }
+#settingsPane .toolbar > button { flex-shrink:0; white-space:nowrap; }
+#settingsPane .setting-row, #settingsPane .preference-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+#settingsPane .setting-row > .grow, #settingsPane .preference-row > .grow { flex:1 1 180px; min-width:0; }
+button.switch-button { width:48px; height:44px; min-width:48px; padding:4px!important; flex:0 0 48px; display:inline-flex!important; align-items:center; justify-content:center; background:transparent!important; transform:none!important; }
+button.switch-button .switch { display:block; position:relative; width:40px; height:24px; flex:0 0 40px; border-radius:99px; background:var(--line)!important; }
+button.switch-button .switch::after { width:18px; height:18px; top:2px; left:2px; background:var(--muted); transform:none; transition:left .15s ease; }
+button.switch-button .switch.on { background:#2563eb!important; border-color:#2563eb!important; }
+button.switch-button .switch.on::after { left:18px; background:#fff!important; }
+button:focus-visible { outline:2px solid #2563eb!important; outline-offset:3px; }
+button:disabled { cursor:not-allowed!important; opacity:.5; }
+.pretty-select-menu button.pretty-select-option { justify-content:flex-start!important; text-align:left!important; }
+.pretty-select-menu button.pretty-select-option > span { text-align:left; }
+.routing-rule { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:12px; padding:16px 0; border-bottom:1px solid var(--line); align-items:end; }
+.routing-rule label { display:grid; gap:8px; font-size:12px; font-weight:600; }
+.routing-rule input,.routing-rule select { width:100%; min-width:0; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--white); color:var(--ink); }
+@media(max-width:650px) { #settingsPane .user-row { grid-template-columns:40px minmax(0,1fr); } #settingsPane .user-row > :nth-child(n+3) { grid-column:2; } .routing-rule { grid-template-columns:1fr; } }
+@media(prefers-reduced-motion:reduce) { button.switch-button .switch::after { transition:none; } }
+@media(prefers-reduced-motion:reduce) { .app,.app .side,.app .side .nav button > span,.app .side > .brand .sidebar-wordmark { transition:none!important; } }
+
+/* One calendar visual language for native fields, task ranges and report ranges. */
+#crmDatePicker:not(.date-time-only) { display:grid; grid-template-columns:116px minmax(0,1fr); padding:0; gap:0; border-radius:10px; max-height:calc(100dvh - 24px); overflow-y:auto; background:var(--white); }
+#crmDatePicker .date-picker-calendar { grid-column:2; grid-row:1; padding:10px; }
+#crmDatePicker .date-quick { grid-column:1; grid-row:1 / span 2; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:3px; margin:0; padding:16px 8px; border:0; border-right:1px solid var(--line); }
+#crmDatePicker .date-quick button,.report-calendar-presets button,.task-range-presets button { min-height:32px; border:0; border-radius:8px; padding:8px 10px; background:transparent; color:var(--ink); text-align:left; font-size:12px; font-weight:500; box-shadow:none; }
+#crmDatePicker .date-quick button:hover,.report-calendar-presets button:hover,.task-range-presets button:hover { background:var(--blue2); color:var(--ink); }
+#crmDatePicker .date-picker-head { margin-bottom:4px; height:36px; }
+#crmDatePicker .date-picker-title strong { font-size:14px; font-weight:550; }
+#crmDatePicker .date-picker-title > svg { display:none; }
+#crmDatePicker .date-picker-title .ui-icon { display:none; }
+#crmDatePicker .date-quick button { flex:0 0 auto; height:32px; }
+#crmDatePicker .date-nav,.report-calendar-head .btn,.task-range-heading .btn { width:36px; height:36px; padding:0; border:0!important; background:transparent!important; color:var(--muted)!important; box-shadow:none!important; border-radius:8px; }
+#crmDatePicker .date-weekdays,#crmDatePicker .date-grid { gap:0; }
+#crmDatePicker .date-weekdays span,.report-calendar-grid > span,.task-range-grid > span { font-size:12px; font-weight:500; color:var(--muted); padding:10px 0; }
+#crmDatePicker .date-day,.report-calendar-grid button,.task-range-grid button { position:relative; height:36px; min-height:36px; font-size:13px; font-weight:400; border-radius:8px; box-shadow:none; transition:background-color .15s,color .15s; }
+#crmDatePicker .date-day.selected,.report-calendar-grid button.endpoint,.task-range-grid button.endpoint { background:var(--blue)!important; color:#fff!important; box-shadow:none!important; }
+#crmDatePicker .date-day.outside { color:var(--muted); opacity:.45; }
+#crmDatePicker .date-day.outside.selected { opacity:1; }
+.report-calendar-grid button[aria-current=date]::after,.task-range-grid button[aria-current=date]::after { content:''; position:absolute; bottom:4px; left:calc(50% - 1.5px); width:3px; height:3px; border-radius:50%; background:var(--blue); }
+.report-calendar-grid button.endpoint::after,.task-range-grid button.endpoint::after { background:white; }
+#crmDatePicker .date-time { grid-column:2; padding:12px 10px; margin:0; border-top:1px solid var(--line); }
+#crmDatePicker .date-picker-actions { grid-column:1 / -1; padding:10px; margin:0; border-top:1px solid var(--line); }
+#crmDatePicker.date-only .date-time { display:none; }
+#crmDatePicker.date-time-only .date-quick { display:none; }
+.task-range-picker { border-radius:10px; }
+.task-range-presets { flex-basis:128px; }
+.task-range-presets strong { display:none; }
+.task-range-grid { row-gap:0; }
+.task-range-grid button.in-range:not(.endpoint),.report-calendar-grid button.in-range:not(.endpoint) { background:var(--blue2); border-radius:0; }
+.report-range-dialog { width:min(440px,calc(100vw - 24px)); padding:12px 12px 12px 140px; position:fixed; border-radius:10px; }
+.report-calendar-presets { position:absolute; inset:0 auto 0 0; width:128px; padding:16px 8px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:3px; }
+.report-calendar-grid { gap:0; margin:8px 0; }
+.report-calendar-head { gap:2px; }
+.report-calendar-head strong { font-size:14px; font-weight:550; text-align:center; }
+.report-range-dialog .actions-end { flex-wrap:wrap; padding:10px 0 0; }
+@media(max-width:480px) {
+  #crmDatePicker:not(.date-time-only) { grid-template-columns:1fr; }
+  #crmDatePicker .date-picker-calendar { grid-column:1; grid-row:1; }
+  #crmDatePicker .date-quick { grid-column:1; grid-row:3; flex-direction:row; flex-wrap:wrap; border-right:0; border-top:1px solid var(--line); padding:8px; }
+  #crmDatePicker .date-time { grid-column:1; grid-row:2; }
+  #crmDatePicker .date-picker-actions { grid-row:4; }
+  .report-range-dialog { padding:12px; }
+  .report-calendar-presets { position:static; width:auto; flex-direction:row; flex-wrap:wrap; border-right:0; border-top:1px solid var(--line); margin-top:10px; padding:8px 0; }
+}
+@media(prefers-reduced-motion:reduce) { #crmDatePicker .date-day,.report-calendar-grid button,.task-range-grid button { transition:none; } }

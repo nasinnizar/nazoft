@@ -1,7 +1,7 @@
 import { requireSupabase } from "../services/supabase.js";
 import { clearSessionCookies, setSessionCookies } from "../services/session.js";
 
-async function resolveUser(request, response) {
+export async function resolveUser(request, response) {
   const supabase = requireSupabase();
   const bearer = request.get("authorization")?.replace(/^Bearer\s+/i, "");
   const token = bearer || request.cookies.nazoft_access_token;

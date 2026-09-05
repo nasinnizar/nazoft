@@ -1,0 +1,118 @@
+/* Nazoft action hierarchy. Geometry is identical at rest, hover and press. */
+:root {
+  --action-primary:#356fc0;
+  --action-primary-hover:#2d61aa;
+  --action-primary-pressed:#265391;
+  --action-surface:#fff;
+  --action-hover:#f4f7fb;
+  --action-border:#d5dde8;
+  --action-text:#34445b;
+  --action-danger:#b7384c;
+}
+html[data-theme=dark] {
+  --action-primary:#3976cb;
+  --action-primary-hover:#3269b7;
+  --action-primary-pressed:#2a5c9f;
+  --action-surface:#171d27;
+  --action-hover:#212b39;
+  --action-border:#364154;
+  --action-text:#e0e8f3;
+  --action-danger:#ff9aa9;
+}
+html[data-theme] body button.btn.btn {
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden;
+  background:var(--action-surface)!important;
+  border:1px solid var(--action-border)!important;
+  color:var(--action-text)!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+  gap:8px!important;
+}
+/* A restrained FlowButton wash. It never adds an icon or changes geometry. */
+html[data-theme] body button.btn.btn::after {
+  content:'';
+  position:absolute;
+  z-index:0;
+  top:-35%;
+  bottom:-35%;
+  left:-45%;
+  width:32%;
+  border-radius:50%;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--blue) 13%,transparent),transparent);
+  transform:translateX(-140%) skewX(-14deg)!important;
+  opacity:0;
+  pointer-events:none;
+  transition:transform 240ms ease-out,opacity 100ms ease-out!important;
+}
+html[data-theme] body button.btn.btn.primary::after {
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);
+}
+html[data-theme] body button.btn.btn.danger::after {
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--action-danger) 13%,transparent),transparent);
+}
+html[data-theme] body button.btn.btn:not(:disabled):not([aria-disabled=true]):hover::after,
+html[data-theme] body button.btn.btn:not(:disabled):not([aria-disabled=true]):focus-visible::after {
+  transform:translateX(570%) skewX(-14deg)!important;
+  opacity:1;
+}
+html[data-theme] body button.btn.btn > * { position:relative; z-index:1; }
+html[data-theme] body button.btn.btn:not(.notification-button):not(.sidebar-toggle):not(.close):not([aria-haspopup]):not(.date-nav) {
+  min-height:40px!important;
+  height:auto!important;
+  line-height:20px!important;
+  padding:9px 16px!important;
+}
+html[data-theme] body button.btn.btn.small {
+  min-height:32px!important;
+  line-height:18px!important;
+  padding:6px 11px!important;
+  font-size:12px!important;
+}
+html[data-theme] body button.btn.btn:not(:disabled):not([aria-disabled=true]):hover {
+  background:var(--action-hover)!important;
+  border-color:#a9b9ce!important;
+}
+html[data-theme] body button.btn.btn.primary {
+  background:var(--action-primary)!important;
+  border-color:var(--action-primary)!important;
+  color:white!important;
+}
+html[data-theme] body button.btn.btn.primary:not(:disabled):not([aria-disabled=true]):hover {
+  background:var(--action-primary-hover)!important;
+  border-color:var(--action-primary-hover)!important;
+}
+html[data-theme] body button.btn.btn.primary:not(:disabled):not([aria-disabled=true]):active {
+  background:var(--action-primary-pressed)!important;
+  border-color:var(--action-primary-pressed)!important;
+}
+html[data-theme] body button.btn.btn.danger {
+  color:var(--action-danger)!important;
+  border-color:color-mix(in srgb,var(--action-danger) 30%,var(--action-surface))!important;
+}
+html[data-theme] body button.btn.btn.danger:not(:disabled):hover {
+  background:color-mix(in srgb,var(--action-danger) 8%,var(--action-surface))!important;
+  border-color:var(--action-danger)!important;
+}
+html[data-theme] body button.btn.btn.active,
+html[data-theme] body button.btn.btn[aria-pressed=true] {
+  background:var(--blue2)!important;
+  color:var(--blue)!important;
+  border-color:var(--blue)!important;
+}
+html[data-theme] body button.btn.btn:disabled {
+  opacity:.5!important;
+  cursor:not-allowed!important;
+}
+/* Arrow/calendar header controls remain compact, not full action buttons. */
+html[data-theme] body :is(.task-range-heading,.report-calendar-head) button.btn.btn {
+  min-height:36px;
+  padding:0!important;
+  border-color:transparent!important;
+  background:transparent!important;
+}
+html[data-theme] body :is(.task-range-heading,.report-calendar-head,.date-picker-head,.date-grid,.task-range-grid,.report-calendar-grid) button.btn.btn::after { display:none; }
+@media(prefers-reduced-motion:reduce) {
+  html[data-theme] body button.btn.btn::after { display:none; }
+}

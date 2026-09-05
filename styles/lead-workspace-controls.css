@@ -1,3 +1,53 @@
+body.lead-page-open .top { z-index: 125 !important; }
+body.lead-page-open .side:has(#accountMenu:not(.hidden)) { z-index: 126 !important; }
+body.lead-page-open #accountMenu { z-index: 126 !important; }
+#drawer .workspace-value-change { display: block; margin-top: 7px; }
+#drawer .workspace-pipeline-change { max-width: 100%; white-space: normal; text-align: left; }
+#drawer .followup-qualification > .lead-quality { margin: 0 0 4px; }
+#drawer .saved-private-notes { display: grid; gap: 10px; margin-top: 16px; }
+#drawer .saved-private-notes[hidden] { display: none; }
+#drawer .saved-private-note { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+#drawer .saved-private-note p { margin: 0 0 7px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+#drawer .saved-private-note small { display: block; color: var(--muted); font-size: 11px; line-height: 1.5; }
+#drawer.drawer.open {
+  grid-template-areas: "header header" "controls controls" "main sidebar";
+  align-items: start;
+}
+#drawer .lead-workspace-main { grid-area: main; }
+#drawer .lead-workspace-side { grid-area: sidebar; }
+#drawer .lead-workspace-main,
+#drawer .lead-workspace-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+#drawer .lead-workspace-main > .panel,
+#drawer .lead-workspace-side > .panel {
+  min-width: 0;
+  margin: 0 !important;
+  height: auto;
+}
+#drawer #clientInfo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+}
+#drawer #clientInfo > p { margin: 0; overflow-wrap: anywhere; }
+#drawer #clientInfo > :not(p) { grid-column: 1 / -1; }
+@media (max-width: 760px) {
+  #drawer.drawer.open { grid-template-areas: "header" "controls" "summary" "followup" "info" "notes" "timeline"; }
+  #drawer .lead-workspace-main,
+  #drawer .lead-workspace-side { display: contents; }
+  #drawer .lead-summary-panel { grid-area: summary; }
+  #drawer .lead-followup-panel { grid-area: followup; }
+  #drawer .lead-info-panel { grid-area: info; }
+  #drawer .lead-notes-panel { grid-area: notes; }
+  #drawer .lead-timeline-panel { grid-area: timeline; }
+}
+@media (max-width: 420px) {
+  #drawer #clientInfo { grid-template-columns: 1fr; }
+}
 #drawer .drawer-context-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

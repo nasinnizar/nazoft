@@ -88,6 +88,7 @@
     } else if (item.kind === 'summary') page('today');
   }
 
+  window.notifyCrmTask = (title, body) => pushCrmNotification(title, body, 'activity');
   function pushCrmNotification(title, body, kind = 'activity', lead = null, options = {}) {
     let item = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,

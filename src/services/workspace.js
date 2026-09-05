@@ -1,4 +1,5 @@
 import { pool } from "../db/pool.js";
+import { applyAssignmentRules } from "./assignment-rules.js";
 
 const writableRoles = new Set(["admin", "manager", "sales"]);
 
@@ -35,6 +36,7 @@ function filterWorkspaceForMember(state, identity) {
     ...shared,
     leads,
     deletedLeads,
+    tasks: (Array.isArray(state.tasks) ? state.tasks : []).filter(task => leadBelongsTo(task, identity.email)),
     feed,
     account: { name: identity.name, email: identity.email, photo: "" },
     users: [],
@@ -80,6 +82,10 @@ function mergeWorkspaceForMember(currentState, incomingState, identity, role) {
     deletedLeads: [...memberDeleted, ...otherDeleted],
     feed: mergeUniqueFeed(current.feed, memberFeed),
     recordCounters: mergeRecordCounters(current.recordCounters, incoming.recordCounters),
+    tasks: [
+      ...(Array.isArray(current.tasks) ? current.tasks : []).filter(task => !leadBelongsTo(task, identity.email)),
+      ...(Array.isArray(incoming.tasks) ? incoming.tasks : (current.tasks || [])).filter(task => leadBelongsTo(task, identity.email)),
+    ],
   };
 }
 
@@ -185,16 +191,6 @@ export async function saveWorkspace(userId, state) {
     error.statusCode = 403;
     throw error;
   }
-  if (membership.role === "admin") {
-    const result = await pool.query(
-      `update public.organization_workspaces
-          set state = $2::jsonb, updated_at = now()
-        where organization_id = $1`,
-      [membership.organization_id, JSON.stringify(state)],
-    );
-    if (!result.rowCount) throw new Error("Organization workspace is unavailable.");
-    return;
-  }
   const identity = await getMemberIdentity(userId);
   const client = await pool.connect();
   try {
@@ -204,7 +200,31 @@ export async function saveWorkspace(userId, state) {
       [membership.organization_id],
     );
     if (!current.rowCount) throw new Error("Organization workspace is unavailable.");
-    const merged = mergeWorkspaceForMember(current.rows[0].state, state, identity, membership.role);
+    const previous = current.rows[0].state || {};
+    const merged = membership.role === 'admin'
+      ? {...state, tasks:state.tasks ?? previous.tasks ?? [], assignmentRules:state.assignmentRules ?? previous.assignmentRules ?? []}
+      : mergeWorkspaceForMember(previous, state, identity, membership.role);
+    // Browser autosaves must not erase leads received since that tab loaded.
+    const knownNumbers = new Set([...(merged.leads || []), ...(merged.deletedLeads || [])].map(lead=>lead.leadNumber));
+    merged.leads = [...(merged.leads || []), ...(previous.leads || []).filter(lead=>(lead.metaLeadId || lead.integrationLeadId) && !knownNumbers.has(lead.leadNumber))];
+    merged.recordCounters = mergeRecordCounters(previous.recordCounters, merged.recordCounters);
+    // An older browser tab must not erase proposal drafts it never loaded.
+    for (const lead of merged.leads || []) {
+      if (!Object.hasOwn(lead, 'proposals')) {
+        const prior = (previous.leads || []).find(item => item.leadNumber === lead.leadNumber);
+        if (prior?.proposals) lead.proposals = prior.proposals;
+      }
+    }
+    if (Array.isArray(merged.assignmentRules) && merged.assignmentRules.length) {
+      const members = await client.query(
+        `select u.email, coalesce(nullif(p.display_name, ''), u.email) name
+         from public.organization_members m join auth.users u on u.id=m.user_id
+         left join public.profiles p on p.user_id=u.id
+         where m.organization_id=$1 and m.status='active' and m.role in ('admin','manager','sales')`,
+        [membership.organization_id],
+      );
+      applyAssignmentRules(merged, previous, members.rows);
+    }
     await client.query(
       `update public.organization_workspaces set state = $2::jsonb, updated_at = now() where organization_id = $1`,
       [membership.organization_id, JSON.stringify(merged)],

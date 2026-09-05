@@ -1,0 +1,63 @@
+/* Final interaction policy: stable geometry, restrained feedback, no decorative motion.
+   Kept last to supersede legacy inline/theme hover rules across every screen. */
+html[data-theme] body button,
+html[data-theme] body button.btn.btn,
+html[data-theme] body button.btn.btn:is(:hover,:active,:focus-visible),
+html[data-theme] body .date-trigger,
+html[data-theme] body .pretty-select-trigger {
+  transform:none!important;
+  transition:background-color 120ms ease-out,color 120ms ease-out,border-color 120ms ease-out!important;
+}
+html[data-theme] body button.btn.btn,
+html[data-theme] body button.btn.btn:is(:hover,:active,:focus-visible) {
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+html[data-theme] body :is(button,.date-trigger,.pretty-select-trigger):focus-visible {
+  outline:2px solid var(--blue)!important;
+  outline-offset:3px!important;
+}
+html[data-theme] body :is(.deal,.contentcard,.dashboard-metric,.metric,.choice-card):is(:hover,:active) {
+  transform:none!important;
+}
+html[data-theme] body :is(.deal,.contentcard,.dashboard-metric,.metric,.choice-card) {
+  transition:border-color 120ms ease-out,background-color 120ms ease-out!important;
+}
+html[data-theme] body .page.active,
+html[data-theme] body .toast.show,
+html[data-theme] body #crmDatePicker,
+html[data-theme] body .app-loader-logo,
+html[data-theme] body .smooth-line { animation:none!important; }
+html[data-theme] body .side .nav button > span,
+html[data-theme] body .side .nav button:hover > span {
+  transform:none!important;
+  transition:none!important;
+}
+/* Prevent flex shrink and hover scaling from distorting the original icon geometry. */
+html[data-theme] body button > :is(svg,.ui-icon,.nav-icon),
+html[data-theme] body .side .nav button > .nav-icon {
+  flex-shrink:0!important;
+  transform:none!important;
+  transition:color 120ms ease-out!important;
+  aspect-ratio:1;
+}
+html[data-theme] body button > .ui-icon { width:16px!important; height:16px!important; flex-basis:16px!important; }
+html[data-theme] body .side .nav button > .nav-icon { width:18px!important; height:18px!important; flex-basis:18px!important; }
+html[data-theme] body .side > .brand .brand-logo { transition:none!important; transform:none!important; }
+@media(min-width:981px) {
+  html[data-theme] body .app,html[data-theme] body .app .side,
+  html[data-theme] body .app .side > .brand,
+  html[data-theme] body .app .side > .brand .sidebar-wordmark { transition:none!important; }
+}
+/* Mobile drawer motion communicates an actual navigation state change. */
+@media(max-width:980px) {
+  html[data-theme] body .side { transition:transform 180ms ease-out,visibility 180ms!important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-theme] body *,html[data-theme] body *::before,html[data-theme] body *::after {
+    transition:none!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+  }
+}

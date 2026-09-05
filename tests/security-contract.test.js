@@ -49,6 +49,34 @@ test("successful authentication never flashes the sign-in form again", async () 
   assert.doesNotMatch(html, /1150/);
 });
 
+test("local Supabase connections can use the IPv4 session pooler", async () => {
+  const env = await read("src/config/env.js");
+  const pool = await read("src/db/pool.js");
+  assert.match(env, /SUPABASE_DB_POOLER_REGION/);
+  assert.match(pool, /aws-0-\$\{env\.SUPABASE_DB_POOLER_REGION\}\.pooler\.supabase\.com/);
+  assert.match(pool, /connection\.username = `postgres\.\$\{direct\[1\]\}`/);
+  assert.match(pool, /connection\.port = "5432"/);
+  assert.match(pool, /pool\.on\("error"/);
+});
+
+test("CRM forms use the shared responsive horizontal field pattern", async () => {
+  const html = await read("index.html");
+  const app = await read("src/app.js");
+  const script = await read("scripts/form-layout.js");
+  const styles = await read("styles/form-layout.css");
+  const component = await read("components/ui/v-label-14.tsx");
+
+  assert.match(html, /form-layout\.css\?v=1/);
+  assert.match(html, /form-layout\.js\?v=1/);
+  assert.match(app, /'form-layout\.js'/);
+  assert.match(script, /crm-horizontal-form/);
+  assert.match(script, /MutationObserver/);
+  assert.match(styles, /grid-template-columns:minmax\(112px,144px\) minmax\(0,1fr\)/);
+  assert.match(styles, /@media\(max-width:700px\)/);
+  assert.match(component, /grid-cols-\[100px_1fr\]/);
+  assert.match(component, /useId/);
+});
+
 test("regional settings cover country, currency, locale, and time zone", async () => {
   const html = await read("index.html");
   const app = await read("src/app.js");
@@ -68,8 +96,8 @@ test("lead workspace provides direct group and sequence controls", async () => {
   const html = await read("index.html");
   const app = await read("src/app.js");
   const controls = await read("scripts/lead-workspace-controls.js");
-  assert.match(html, /lead-workspace-controls\.js\?v=1/);
-  assert.match(html, /lead-workspace-controls\.css\?v=1/);
+  assert.match(html, /lead-workspace-controls\.js\?v=4/);
+  assert.match(html, /lead-workspace-controls\.css\?v=4/);
   assert.match(app, /\/scripts\/lead-workspace-controls\.js/);
   assert.match(controls, /drawerGroupSelect/);
   assert.match(controls, /drawerSequenceSelect/);
@@ -216,7 +244,7 @@ test("pipeline guidance and mobile desktop-style navigation are available", asyn
   const mobileSidebar = await read("scripts/mobile-sidebar.js");
   const app = await read("src/app.js");
   assert.match(html, /id="pipelineDescription">Business Setup Sales · 7 customizable stages/);
-  assert.match(html, /mobile-sidebar\.js\?v=1/);
+  assert.match(html, /mobile-sidebar\.js\?v=\d+/);
   assert.match(mobileSidebar, /mobile-sidebar-open/);
   assert.match(mobileSidebar, /Close navigation/);
   assert.match(app, /\/scripts\/mobile-sidebar\.js/);

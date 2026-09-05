@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';
+import vm from 'node:vm';
+vm.runInThisContext(await fs.readFile('assets/pdf-lib.min.js','utf8'));
+await import('../scripts/proposal-pdf.js');
+const draft={preparedBy:'Sample Consultant',designation:'Business Consultant',preparerPhone:'+966 500 000 000',preparerEmail:'consultant@example.com',preparedFor:'Sample Client - Example Industries',clientPhone:'+966 511 111 111',clientEmail:'client@example.com',reference:'PR-SAMPLE',date:'2026-09-05',license:'Regular Investment Registration - Trading',structure:'100% Foreign Owned LLC',items:CrmProposalPdf.defaults,discount:5000,vat:0,exclusions:'Excluding applicable VAT. Fees related to employee Visa/Iqama, hiring employees, Saudization or PRO-related services are excluded.'};
+draft.note='Please contact your consultant if you need clarification on the quoted services.';
+const bytes=await CrmProposalPdf.generate(draft,await fs.readFile('assets/proposal-template.pdf'));
+await fs.mkdir('output/pdf',{recursive:true});
+await fs.writeFile('output/pdf/proposal-sample.pdf',bytes);
+const pdf=await PDFLib.PDFDocument.load(bytes);
+if(pdf.getPageCount()!==11)throw Error('Incorrect page count');
+console.log('Sample PDF generated: 11 pages; expected total SAR 51,000.00');

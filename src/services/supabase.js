@@ -15,7 +15,10 @@ export function requireSupabase() {
     error.expose = true;
     throw error;
   }
-  return supabase;
+  // Never share mutable Auth session state between server requests.
+  return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
 }
 
 export function createSessionClient(accessToken) {

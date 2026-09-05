@@ -6,6 +6,37 @@
   const brand = sidebar?.querySelector('.brand');
   if (!sidebar || !toggle || !brand) return;
 
+  // Preview a collapsed desktop sidebar on hover without changing the saved preference.
+  const shell = sidebar.closest('.app');
+  const hoverQuery = matchMedia('(min-width:981px) and (hover:hover) and (pointer:fine)');
+  let previewing = false;
+  function previewSidebar() {
+    if (!hoverQuery.matches || !shell.classList.contains('sidebar-collapsed')) return;
+    previewing = true;
+    shell.classList.remove('sidebar-collapsed');
+    shell.classList.add('sidebar-hover-preview');
+    toggle.setAttribute('aria-expanded','true');
+    toggle.setAttribute('aria-label','Pin sidebar open');
+    toggle.title='Pin sidebar open';
+  }
+  function closePreview(force = false) {
+    if (!previewing || (!force && sidebar.contains(document.activeElement))) return;
+    previewing = false;
+    shell.classList.remove('sidebar-hover-preview');
+    setSidebarCollapsed(true);
+  }
+  sidebar.addEventListener('pointerenter',previewSidebar);
+  sidebar.addEventListener('pointerleave',()=>closePreview());
+  toggle.addEventListener('click',event=>{
+    if (!previewing || mobileQuery.matches) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    previewing=false;
+    shell.classList.remove('sidebar-hover-preview');
+    setSidebarCollapsed(false);
+  },true);
+  hoverQuery.addEventListener?.('change',()=>closePreview(true));
+
   const backdrop = document.createElement('button');
   backdrop.type = 'button';
   backdrop.className = 'mobile-sidebar-backdrop';

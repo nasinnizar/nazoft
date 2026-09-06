@@ -43,3 +43,14 @@ test('sidebar hover preview uses the slower premium easing', () => {
   assert.match(css, /profileAvatar[\s\S]*flex:0 0 36px!important/);
   assert.match(script, /button\[data-page\][\s\S]*requestAnimationFrame[\s\S]*closePreview\(true\)/);
 });
+test('all CRM calendars share the Tasks two-month surface', () => {
+  const polish = read('scripts/settings-polish.js');
+  const reports = read('scripts/reports-tasks.js');
+  const css = read('styles/reports-tasks.css') + read('styles/settings-polish.css');
+  assert.match(polish, /crm-date-months task-range-months/);
+  assert.match(polish, /activeDateInput\?\.type==='time'\?322:748/);
+  assert.match(reports, /report-calendar-months/);
+  assert.match(reports, /for\(let offset=0;offset<2;offset\+\+\)/);
+  assert.match(css, /width:min\(748px,calc\(100vw - 16px\)\)/);
+  assert.match(css, /report-calendar-months[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+});

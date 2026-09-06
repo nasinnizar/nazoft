@@ -197,34 +197,34 @@
     let start=detail.querySelector('#reportFrom').value,end=detail.querySelector('#reportTo').value,selectingEnd=false;
     const initial=start?new Date(`${start}T12:00:00`):new Date();
     let month=new Date(initial.getFullYear(),initial.getMonth(),1);
-    const dialog=document.createElement('dialog');dialog.className='report-range-dialog';dialog.setAttribute('aria-label','Choose report date range');
-    dialog.innerHTML='<div class="report-calendar-head"><button type="button" class="btn" aria-label="Previous month">‹</button><strong></strong><button type="button" class="btn" aria-label="Next month">›</button></div><p class="report-range-help" aria-live="polite"></p><div class="report-calendar-grid"></div><div class="actions-end"><button type="button" class="btn" data-clear>All dates</button><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn primary" data-apply>Apply</button></div>';
-    const grid=dialog.querySelector('.report-calendar-grid');
-    const quick=document.createElement('aside');quick.className='report-calendar-presets';
-    [['Today',0],['Yesterday',1],['Last 7 days',6],['Last 30 days',29]].forEach(([label,days])=>{
+    const dialog=document.createElement('dialog');dialog.className='report-range-dialog task-calendar-surface';dialog.setAttribute('aria-label','Choose report date range');
+    dialog.innerHTML='<aside class="report-calendar-presets"></aside><div class="report-range-main"><div class="report-calendar-months"></div><div class="report-range-footer"><span class="report-range-help" aria-live="polite"></span><button type="button" class="btn" data-clear>Clear</button><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn primary" data-apply>Apply</button></div></div>';
+    const quick=dialog.querySelector('.report-calendar-presets');
+    [['Today',0],['Yesterday',1],['Last 7 Days',6],['Last 30 Days',29],['This Month','month'],['Last Month','last-month']].forEach(([label,days])=>{
       const button=document.createElement('button');button.type='button';button.textContent=label;
-      button.onclick=()=>{const to=new Date(),from=new Date();from.setDate(from.getDate()-days);if(label==='Yesterday')to.setDate(to.getDate()-1);start=localDay(from);end=localDay(to);month=new Date(from.getFullYear(),from.getMonth(),1);selectingEnd=false;draw();};quick.append(button);
+      button.onclick=()=>{let to=new Date(),from=new Date();if(days==='month'){from=new Date(to.getFullYear(),to.getMonth(),1);to=new Date(to.getFullYear(),to.getMonth()+1,0);}else if(days==='last-month'){from=new Date(to.getFullYear(),to.getMonth()-1,1);to=new Date(to.getFullYear(),to.getMonth(),0);}else{from.setDate(from.getDate()-Number(days));if(label==='Yesterday')to.setDate(to.getDate()-1);}start=localDay(from);end=localDay(to);month=new Date(from.getFullYear(),from.getMonth(),1);selectingEnd=false;quick.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));draw();};quick.append(button);
     });
-    dialog.append(quick);
     function draw(){
-      dialog.querySelector('strong').textContent=month.toLocaleDateString(undefined,{month:'long',year:'numeric'});
       dialog.querySelector('.report-range-help').textContent=selectingEnd?'Click the end date, or Apply for a single day.':'Click a start date, then an end date.';
       dialog.querySelector('[data-apply]').disabled=!start;
-      const offset=(month.getDay()+6)%7,days=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
-      grid.innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(day=>`<span>${day}</span>`).join('')+'<span></span>'.repeat(offset);
-      for(let day=1;day<=days;day++){
-        const value=localDay(new Date(month.getFullYear(),month.getMonth(),day)),button=document.createElement('button');
-        button.type='button';button.textContent=day;button.setAttribute('aria-label',labelDay(value));
-        button.classList.toggle('in-range',!!start&&value>=start&&value<=(end||start));
-        button.classList.toggle('endpoint',value===start||value===end);
-        if(value===localDay(new Date()))button.setAttribute('aria-current','date');
-        button.setAttribute('aria-pressed',String(value===start||value===end));
-        button.onclick=()=>{if(!selectingEnd){start=value;end='';selectingEnd=true;draw();grid.querySelector(`[aria-label="${button.getAttribute('aria-label')}"]`)?.focus();}else{end=value;[start,end]=[start,end].sort();setRange(start,end);dialog.close();}};
-        grid.appendChild(button);
+      const months=dialog.querySelector('.report-calendar-months');months.replaceChildren();
+      for(let offset=0;offset<2;offset++){
+        const visible=new Date(month.getFullYear(),month.getMonth()+offset,1),section=document.createElement('section');section.className='report-calendar-month';
+        section.innerHTML=`<div class="report-calendar-head"><button type="button" class="btn" aria-label="${offset?'Next':'Previous'} month">${offset?'›':'‹'}</button><strong>${visible.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</strong></div><div class="report-calendar-grid"></div>`;
+        section.querySelector('.report-calendar-head button').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+(offset?1:-1),1);draw();};
+        const grid=section.querySelector('.report-calendar-grid');
+        ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(day=>{const text=document.createElement('span');text.textContent=day;grid.append(text);});
+        for(let index=0;index<42;index++){
+          const day=new Date(visible.getFullYear(),visible.getMonth(),index-visible.getDay()+1),value=localDay(day),button=document.createElement('button');
+          button.type='button';button.textContent=day.getDate();button.setAttribute('aria-label',day.toLocaleDateString(undefined,{dateStyle:'full'}));
+          button.className=[day.getMonth()!==visible.getMonth()?'outside':'',start&&value>=start&&value<=(end||start)?'in-range':'',value===start||value===end?'endpoint':''].join(' ');
+          if(value===localDay(new Date()))button.setAttribute('aria-current','date');button.setAttribute('aria-pressed',String(value===start||value===end));
+          button.onclick=()=>{if(!selectingEnd){start=value;end='';selectingEnd=true;}else{end=value;[start,end]=[start,end].sort();selectingEnd=false;}quick.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed','false'));draw();dialog.querySelector(`[data-focus-date="${value}"]`)?.focus();};
+          button.dataset.focusDate=value;grid.append(button);
+        }
+        months.append(section);
       }
     }
-    const nav=dialog.querySelectorAll('.report-calendar-head button');
-    nav.forEach((button,index)=>button.onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+(index?1:-1),1);draw();});
     dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();
     dialog.querySelector('[data-clear]').onclick=()=>{setRange('','');dialog.close();};
     dialog.querySelector('[data-apply]').onclick=()=>{if(start)setRange(start,end||start);dialog.close();};

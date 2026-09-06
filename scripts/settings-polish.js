@@ -100,10 +100,28 @@
       button.setAttribute('aria-pressed',String(button.classList.contains('selected')));
       if(button.classList.contains('today'))button.setAttribute('aria-current','date');
     });
+    // Every single-date calendar uses the same two-month surface as the Tasks range picker.
+    const primary=datePicker.querySelector('.date-picker-calendar');
+    const chooseNativeDay=value=>{if(scheduling){const hour=Number(datePicker.querySelector('#dateHour').value)%12+(datePicker.querySelector('#datePeriod').value==='PM'?12:0);datePickerDraft.setHours(hour,Number(datePicker.querySelector('#dateMinute').value),0,0);}const [year,month,day]=value.split('-').map(Number);datePickerDraft.setFullYear(year,month-1,day);datePickerView=new Date(year,month-1,1);renderDatePicker();};
+    // Tasks starts weeks on Sunday, so normalize the original single-date month too.
+    const primaryFirst=new Date(datePickerView.getFullYear(),datePickerView.getMonth(),1),primaryStart=new Date(primaryFirst.getFullYear(),primaryFirst.getMonth(),1-primaryFirst.getDay()),primarySelected=localDateParts(datePickerDraft),primaryToday=localDateParts(new Date());
+    primary.querySelector('.date-weekdays').innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day=>`<span>${day}</span>`).join('');
+    primary.querySelector('.date-grid').innerHTML=Array.from({length:42},(_,index)=>{const date=new Date(primaryStart);date.setDate(primaryStart.getDate()+index);const p=localDateParts(date),isSelected=p.year===primarySelected.year&&p.month===primarySelected.month&&p.day===primarySelected.day,isToday=p.year===primaryToday.year&&p.month===primaryToday.month&&p.day===primaryToday.day;return `<button type="button" class="date-day ${date.getMonth()!==datePickerView.getMonth()?'outside':''} ${isSelected?'selected':''} ${isToday?'today':''}" data-primary-day="${p.year}-${padDatePart(p.month)}-${padDatePart(p.day)}" aria-label="${date.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}" aria-pressed="${isSelected}" ${isToday?'aria-current="date"':''}>${p.day}</button>`}).join('');
+    primary.querySelectorAll('[data-primary-day]').forEach(button=>button.onclick=()=>chooseNativeDay(button.dataset.primaryDay));
+    primary.classList.add('crm-date-month','task-range-month');
+    const months=document.createElement('div');months.className='crm-date-months task-range-months';
+    primary.before(months);months.append(primary);
+    const secondaryView=new Date(datePickerView.getFullYear(),datePickerView.getMonth()+1,1);
+    const secondary=document.createElement('section');secondary.className='date-picker-calendar crm-date-month task-range-month crm-date-month-secondary';
+    const selected=localDateParts(datePickerDraft),today=localDateParts(new Date()),first=new Date(secondaryView.getFullYear(),secondaryView.getMonth(),1),gridStart=new Date(first.getFullYear(),first.getMonth(),1-first.getDay());
+    secondary.innerHTML=`<div class="date-picker-head"><div class="date-picker-title"><strong>${secondaryView.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</strong></div><button class="date-nav" type="button" data-secondary-next aria-label="Next month">›</button></div><div class="date-weekdays">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day=>`<span>${day}</span>`).join('')}</div><div class="date-grid">${Array.from({length:42},(_,index)=>{const date=new Date(gridStart);date.setDate(gridStart.getDate()+index);const p=localDateParts(date),isSelected=p.year===selected.year&&p.month===selected.month&&p.day===selected.day,isToday=p.year===today.year&&p.month===today.month&&p.day===today.day;return `<button type="button" class="date-day ${date.getMonth()!==secondaryView.getMonth()?'outside':''} ${isSelected?'selected':''} ${isToday?'today':''}" data-secondary-day="${p.year}-${padDatePart(p.month)}-${padDatePart(p.day)}" aria-label="${date.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}" aria-pressed="${isSelected}" ${isToday?'aria-current="date"':''}>${p.day}</button>`}).join('')}</div>`;
+    months.append(secondary);
+    secondary.querySelector('[data-secondary-next]').onclick=()=>{datePickerView.setMonth(datePickerView.getMonth()+1);renderDatePicker();};
+    secondary.querySelectorAll('[data-secondary-day]').forEach(button=>button.onclick=()=>chooseNativeDay(button.dataset.secondaryDay));
   };
   positionDatePicker = function(trigger) {
     const rect=trigger.getBoundingClientRect();
-    const width=Math.min(activeDateInput?.type==='time'?322:430,innerWidth-24);
+    const width=Math.min(activeDateInput?.type==='time'?322:748,innerWidth-24);
     datePicker.style.width=`${width}px`;
     datePicker.style.left=`${Math.max(12,Math.min(rect.left,innerWidth-width-12))}px`;
     datePicker.style.top='12px';

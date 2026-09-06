@@ -57,7 +57,10 @@ app.use(express.json({ limit: "2mb" }));
 
 app.get("/health", async (_request, response) => {
   try { await pool.query("select 1"); response.json({ status: "ok", database: "connected" }); }
-  catch { response.status(503).json({ status: "error", database: "unavailable" }); }
+  catch (error) {
+    console.error("Database health check failed.", error.code || error.name, error.message);
+    response.status(503).json({ status: "error", database: "unavailable" });
+  }
 });
 
 app.use("/api/auth", authRouter);

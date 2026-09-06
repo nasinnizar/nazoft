@@ -1,5 +1,7 @@
 import pg from "pg";
+import { readFileSync } from "node:fs";
 import { env } from "../config/env.js";
+import { databaseSslOptions } from "./tls.js";
 
 export function databaseConnectionString() {
   const connection = new URL(env.DATABASE_URL);
@@ -12,9 +14,17 @@ export function databaseConnectionString() {
   return connection.toString();
 }
 
+const connectionString = databaseConnectionString();
+const databaseHostname = new URL(connectionString).hostname;
+const supabaseRootCa = readFileSync(new URL("../../certs/supabase-root-2021-ca.crt", import.meta.url), "utf8");
+
 export const pool = new pg.Pool({
-  connectionString: databaseConnectionString(),
-  ssl: { rejectUnauthorized: env.DATABASE_SSL_REJECT_UNAUTHORIZED },
+  connectionString,
+  ssl: databaseSslOptions(databaseHostname, {
+    caCertificate: env.DATABASE_CA_CERT,
+    defaultSupabaseCa: supabaseRootCa,
+    rejectUnauthorized: env.DATABASE_SSL_REJECT_UNAUTHORIZED,
+  }),
   max: 10,
   connectionTimeoutMillis: 15_000,
   idleTimeoutMillis: 30_000,

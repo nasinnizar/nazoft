@@ -91,12 +91,17 @@ test("Vercel stays within the project's serverless function limit", async () => 
 test("local Supabase connections can use the IPv4 session pooler", async () => {
   const env = await read("src/config/env.js");
   const pool = await read("src/db/pool.js");
+  const tls = await read("src/db/tls.js");
   assert.match(env, /SUPABASE_DB_POOLER_REGION/);
   assert.match(env, /default\("ap-south-1"\)/);
   assert.match(pool, /aws-0-\$\{env\.SUPABASE_DB_POOLER_REGION\}\.pooler\.supabase\.com/);
   assert.match(pool, /connection\.username = `postgres\.\$\{direct\[1\]\}`/);
   assert.match(pool, /connection\.port = "5432"/);
+  assert.match(pool, /databaseSslOptions/);
+  assert.match(pool, /supabase-root-2021-ca\.crt/);
   assert.match(pool, /pool\.on\("error"/);
+  assert.match(tls, /\.pooler\.supabase\.com/);
+  assert.match(tls, /caCertificate/);
 });
 
 test("CRM forms use the shared responsive horizontal field pattern", async () => {

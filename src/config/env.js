@@ -13,7 +13,7 @@ const schema = z.object({
   SUPABASE_URL: z.preprocess(nonEmpty, z.string().url().optional()),
   SUPABASE_ANON_KEY: z.preprocess(nonEmpty, z.string().min(20).optional()),
   SUPABASE_SERVICE_ROLE_KEY: z.preprocess(nonEmpty, z.string().min(20).optional()),
-  SUPABASE_DB_POOLER_REGION: z.preprocess(nonEmpty, z.string().regex(/^[a-z]{2}(?:-[a-z]+)+-\d$/).optional()),
+  SUPABASE_DB_POOLER_REGION: z.preprocess(nonEmpty, z.string().regex(/^[a-z]{2}(?:-[a-z]+)+-\d$/).default("ap-south-1")),
   APP_URL: z.preprocess(nonEmpty, z.string().url().optional()),
   ALLOW_PUBLIC_SIGNUP: z.preprocess(
     value => nonEmpty(value) ?? "false",

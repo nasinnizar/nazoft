@@ -6,6 +6,7 @@ import { getRequestAccessToken } from "../middleware/auth.js";
 import { clearSessionCookies, setSessionCookies } from "../services/session.js";
 import { createSessionClient, requireSupabase } from "../services/supabase.js";
 import { env } from "../config/env.js";
+import { getWorkspace } from "../services/workspace.js";
 
 export const authRouter = Router();
 const credentials = z.object({ email: z.string().email(), password: z.string().min(8).max(128) });
@@ -100,4 +101,19 @@ authRouter.post("/sign-out", async (request, response) => {
   }
 });
 
-authRouter.get("/session", requireAuth, (request, response) => response.json({ user: { id: request.user.id, email: request.user.email } }));
+authRouter.get("/session", requireAuth, async (request, response, next) => {
+  try {
+    const workspace = await getWorkspace(request.user.id);
+    response.json({
+      user: { id: request.user.id, email: request.user.email },
+      workspaceReady: true,
+      organization: workspace.organization,
+    });
+  } catch (error) {
+    if (error.statusCode === 403) return response.status(403).json({ error: error.message });
+    const unavailable = new Error("Sign-in verification is temporarily unavailable. Please try again.", { cause: error });
+    unavailable.statusCode = 503;
+    unavailable.expose = true;
+    next(unavailable);
+  }
+});

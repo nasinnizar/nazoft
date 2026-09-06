@@ -49,10 +49,33 @@ test("successful authentication never flashes the sign-in form again", async () 
   assert.doesNotMatch(html, /1150/);
 });
 
+test("login waits for an authorized workspace and keeps the CRM shell private", async () => {
+  const html = await read("index.html");
+  const expressSession = await read("src/routes/auth.js");
+  const vercelSession = await read("api/auth/session.js");
+  const vercel = JSON.parse(await read("vercel.json"));
+
+  assert.match(html, /<html lang="en" class="auth-pending">/);
+  assert.match(html, /interactive-widget=resizes-content/);
+  assert.match(html, /html\.auth-pending \.app,html\.auth-locked \.app\{display:none!important\}/);
+  assert.match(html, /app\.inert=!authenticated/);
+  assert.match(html, /login\.inert=authenticated\|\|transitioning/);
+  assert.match(html, /result\.workspaceReady===true/);
+  assert.match(html, /return `\/app\?session=\$\{Date\.now\(\)\.toString\(36\)\}`/);
+  assert.match(expressSession, /const workspace = await getWorkspace\(request\.user\.id\)/);
+  assert.match(expressSession, /workspaceReady: true/);
+  assert.match(vercelSession, /const workspace = await getWorkspace\(user\.id\)/);
+  assert.match(vercelSession, /workspaceReady: true/);
+
+  const protectedPaths = new Set(vercel.headers.filter(rule => rule.headers.some(header => header.key === "Cache-Control" && /private, no-store/.test(header.value))).map(rule => rule.source));
+  for (const path of ["/", "/login", "/app", "/app/(.*)", "/index.html"]) assert.ok(protectedPaths.has(path));
+});
+
 test("local Supabase connections can use the IPv4 session pooler", async () => {
   const env = await read("src/config/env.js");
   const pool = await read("src/db/pool.js");
   assert.match(env, /SUPABASE_DB_POOLER_REGION/);
+  assert.match(env, /default\("ap-south-1"\)/);
   assert.match(pool, /aws-0-\$\{env\.SUPABASE_DB_POOLER_REGION\}\.pooler\.supabase\.com/);
   assert.match(pool, /connection\.username = `postgres\.\$\{direct\[1\]\}`/);
   assert.match(pool, /connection\.port = "5432"/);

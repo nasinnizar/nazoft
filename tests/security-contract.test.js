@@ -71,7 +71,7 @@ test("login waits for an authorized workspace and keeps the CRM shell private", 
   for (const path of ["/", "/login", "/app", "/app/(.*)", "/index.html"]) assert.ok(protectedPaths.has(path));
 });
 
-test("Vercel stays within the Hobby serverless function limit", async () => {
+test("Vercel stays within the project's serverless function limit", async () => {
   const apiFiles = [];
   async function collect(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -81,7 +81,10 @@ test("Vercel stays within the Hobby serverless function limit", async () => {
     }
   }
   await collect(new URL("../api/", import.meta.url));
-  assert.ok(apiFiles.length <= 12, `Vercel Hobby allows 12 functions; found ${apiFiles.length}`);
+  assert.ok(apiFiles.length <= 11, `This Vercel project deploys at most 11 functions; found ${apiFiles.length}`);
+  const vercel = JSON.parse(await read("vercel.json"));
+  assert.ok(vercel.rewrites.some(rule => rule.source === "/api/auth/otp-verify" && rule.destination === "/api/auth/exchange?flow=otp"));
+  assert.match(await read("api/auth/exchange.js"), /request\.query\?\.flow === "otp"/);
 });
 
 test("local Supabase connections can use the IPv4 session pooler", async () => {

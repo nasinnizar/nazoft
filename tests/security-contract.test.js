@@ -36,6 +36,7 @@ test("login failures remain visible and accessible", async () => {
   assert.match(html, /id="loginError" role="alert" aria-live="polite"/);
   assert.match(html, /Invalid email or password|error\.message/);
   assert.match(html, /aria-invalid/);
+  assert.doesNotMatch(html, /allow cookies|cookies should be enabled/i);
 });
 
 test("successful authentication never flashes the sign-in form again", async () => {

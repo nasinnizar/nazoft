@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
@@ -69,6 +69,19 @@ test("login waits for an authorized workspace and keeps the CRM shell private", 
 
   const protectedPaths = new Set(vercel.headers.filter(rule => rule.headers.some(header => header.key === "Cache-Control" && /private, no-store/.test(header.value))).map(rule => rule.source));
   for (const path of ["/", "/login", "/app", "/app/(.*)", "/index.html"]) assert.ok(protectedPaths.has(path));
+});
+
+test("Vercel stays within the Hobby serverless function limit", async () => {
+  const apiFiles = [];
+  async function collect(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const path = new URL(`${entry.name}${entry.isDirectory() ? "/" : ""}`, directory);
+      if (entry.isDirectory()) await collect(path);
+      else if (entry.isFile() && entry.name.endsWith(".js")) apiFiles.push(path);
+    }
+  }
+  await collect(new URL("../api/", import.meta.url));
+  assert.ok(apiFiles.length <= 12, `Vercel Hobby allows 12 functions; found ${apiFiles.length}`);
 });
 
 test("local Supabase connections can use the IPv4 session pooler", async () => {

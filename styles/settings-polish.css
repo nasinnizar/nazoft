@@ -1,16 +1,16 @@
 /* Keep the logo fixed while the rail changes size; never squash the wordmark. */
 @media(min-width:981px) {
-  .app { transition:grid-template-columns .22s cubic-bezier(.2,.8,.2,1)!important; }
-  .app .side { transition:width .22s cubic-bezier(.2,.8,.2,1)!important; }
+  .app { transition:grid-template-columns .52s cubic-bezier(.22,.61,.36,1)!important; }
+  .app .side { transition:width .52s cubic-bezier(.22,.61,.36,1),box-shadow .52s ease!important; }
   .app .side > .brand { position:relative; justify-content:flex-start; overflow:hidden; gap:10px; }
   .app .side > .brand .brand-logo { flex:0 0 34px; }
-  .app .side > .brand .sidebar-wordmark { flex:0 0 126px; max-width:126px!important; transition:opacity .14s ease,transform .22s ease!important; }
+  .app .side > .brand .sidebar-wordmark { flex:0 0 126px; max-width:126px!important; transition:opacity .52s cubic-bezier(.22,.61,.36,1),transform .52s cubic-bezier(.22,.61,.36,1)!important; }
   .app.sidebar-collapsed .side > .brand { justify-content:flex-start; }
   .app.sidebar-collapsed .side > .brand .sidebar-wordmark { display:block; opacity:0; }
   .app .side .nav { min-height:0; overflow-x:hidden; overflow-y:auto; padding-bottom:12px; }
   .app .side .nav button { flex-shrink:0; justify-content:flex-start!important; overflow:hidden; white-space:nowrap; }
   .app .side .nav button .nav-icon { flex:0 0 18px!important; }
-  .app .side .nav button > span { display:inline-block!important; width:auto!important; min-width:145px; opacity:1; transform:translateX(0); transition:opacity .14s ease,transform .22s ease; }
+  .app .side .nav button > span { display:inline-block!important; width:auto!important; min-width:145px; opacity:1; transform:translateX(0); transition:opacity .52s cubic-bezier(.22,.61,.36,1),transform .52s cubic-bezier(.22,.61,.36,1); }
   .app.sidebar-collapsed .side .nav button > span {
     width:0!important;
     min-width:0!important;

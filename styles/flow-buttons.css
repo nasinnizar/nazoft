@@ -7,8 +7,16 @@ html body button.crm-flow-button.btn {
   border-radius:100px!important;
   padding-inline:16px!important;
   min-height:36px;
-  transition:border-radius .2s ease-out,color .15s,transform .12s!important;
+  transform:translateY(0);
+  transition:border-color .52s cubic-bezier(.22,.61,.36,1),color .52s cubic-bezier(.22,.61,.36,1),box-shadow .52s cubic-bezier(.22,.61,.36,1),transform .52s cubic-bezier(.22,.61,.36,1)!important;
 }
+/* Override earlier theme/context rules while preserving the shared pill geometry. */
+html:not([data-theme="dark"]) body button.crm-flow-button.btn.primary,
+html[data-theme="dark"] body button.crm-flow-button.btn.primary {
+  transition:border-color .52s cubic-bezier(.22,.61,.36,1),color .52s cubic-bezier(.22,.61,.36,1),box-shadow .52s cubic-bezier(.22,.61,.36,1),transform .52s cubic-bezier(.22,.61,.36,1)!important;
+}
+html body #leadMenu button.crm-flow-button.btn,
+html body #leadMenu button.crm-flow-button.btn.danger { border-radius:100px!important; }
 html body button.crm-flow-button.btn.danger { --flow-color:var(--red); }
 html body button.crm-flow-button.btn::before {
   content:'';
@@ -17,19 +25,27 @@ html body button.crm-flow-button.btn::before {
   inset:0;
   background:var(--flow-color);
   clip-path:circle(0% at 50% 50%);
-  transition:clip-path .22s cubic-bezier(.19,1,.22,1);
+  transition:clip-path .52s cubic-bezier(.22,.61,.36,1);
   pointer-events:none;
 }
 html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible) {
   border-radius:100px!important;
   border-color:transparent!important;
   color:white!important;
+  transform:translateY(-1px)!important;
+  box-shadow:0 9px 22px rgb(47 94 163 / 16%);
 }
 html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible)::before { clip-path:circle(150% at 50% 50%); }
-html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):active { transform:scale(.97)!important; }
+html body button.crm-flow-button.btn:not(:disabled):not([aria-disabled=true]):active { transform:translateY(0) scale(.985)!important; transition-duration:.12s!important; }
 html body button.crm-flow-button.btn > .ui-icon { color:inherit!important; }
 html body button.crm-flow-button.btn:disabled,html body button.crm-flow-button.btn[aria-disabled=true] { transform:none!important; cursor:not-allowed!important; }
 html body button:focus-visible { outline-color:var(--blue)!important; }
+
+/* The primary header actions keep a stable minimum width through the shared motion. */
+html body :is(#quickActivity,.top-actions .addLead).crm-flow-button.btn {
+  min-width:104px;
+  box-shadow:0 1px 2px rgb(31 65 114 / 4%);
+}
 @media(prefers-reduced-motion:reduce) {
   html body button.crm-flow-button.btn,html body button.crm-flow-button.btn::before { transition:none!important; }
   html body button.crm-flow-button.btn:not(:disabled):active { transform:none!important; }

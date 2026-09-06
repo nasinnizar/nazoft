@@ -20,9 +20,22 @@ test('collapsed sidebar previews on hover and header controls are circular', () 
   assert.match(polish, /sidebar-collapsed \.side \.nav button > span[\s\S]*min-width:0!important/);
   assert.match(polish, /#sidebarToggle,#notificationButton[\s\S]*border-radius:50%!important/);
 });
-test('reduced FlowButton adds no arrow and keeps the short fill animation', () => {
+test('FlowButton adds no arrow and keeps the approved premium animation', () => {
   const css = read('styles/flow-buttons.css');
-  assert.match(css, /clip-path \.22s/);
+  assert.match(css, /clip-path \.52s/);
+  assert.match(css, /button\.crm-flow-button\.btn\.primary/);
+  assert.match(css, /#leadMenu button\.crm-flow-button\.btn\.danger \{ border-radius:100px!important; \}/);
   assert.match(css, /:is\(:hover,:focus-visible\)[\s\S]*border-radius:100px!important/);
+  assert.match(css, /:is\(:hover,:focus-visible\)[\s\S]*translateY\(-1px\)/);
   assert.doesNotMatch(css, /::after|mask:url|content:'→'/);
+});
+test('header actions keep stable geometry under the shared animation', () => {
+  const css = read('styles/flow-buttons.css');
+  assert.match(css, /:is\(#quickActivity,\.top-actions \.addLead\)[\s\S]*min-width:104px/);
+  assert.doesNotMatch(css, /:is\(#quickActivity,\.top-actions \.addLead\)[^{]*\{[^}]*border-radius:/);
+});
+test('sidebar hover preview uses the slower premium easing', () => {
+  const css = read('styles/settings-polish.css');
+  assert.match(css, /grid-template-columns \.52s cubic-bezier\(\.22,\.61,\.36,1\)/);
+  assert.match(css, /sidebar-wordmark[\s\S]*opacity \.52s cubic-bezier\(\.22,\.61,\.36,1\)/);
 });

@@ -36,6 +36,10 @@ test('header actions keep stable geometry under the shared animation', () => {
 });
 test('sidebar hover preview uses the slower premium easing', () => {
   const css = read('styles/settings-polish.css');
+  const script = read('scripts/mobile-sidebar.js');
   assert.match(css, /grid-template-columns \.52s cubic-bezier\(\.22,\.61,\.36,1\)/);
   assert.match(css, /sidebar-wordmark[\s\S]*opacity \.52s cubic-bezier\(\.22,\.61,\.36,1\)/);
+  assert.match(css, /\.app \.side \.profile[\s\S]*height:58px[\s\S]*margin:auto 0 0!important/);
+  assert.match(css, /profileAvatar[\s\S]*flex:0 0 36px!important/);
+  assert.match(script, /button\[data-page\][\s\S]*requestAnimationFrame[\s\S]*closePreview\(true\)/);
 });

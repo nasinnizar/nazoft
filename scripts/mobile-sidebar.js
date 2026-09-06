@@ -27,6 +27,13 @@
   }
   sidebar.addEventListener('pointerenter',previewSidebar);
   sidebar.addEventListener('pointerleave',()=>closePreview());
+  sidebar.querySelector('.nav')?.addEventListener('click',event=>{
+    if (!previewing || mobileQuery.matches || !event.target.closest('button[data-page]')) return;
+    requestAnimationFrame(()=>{
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+      closePreview(true);
+    });
+  });
   toggle.addEventListener('click',event=>{
     if (!previewing || mobileQuery.matches) return;
     event.preventDefault();

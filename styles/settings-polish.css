@@ -21,7 +21,21 @@
     pointer-events:none;
   }
   .app .side .nav button:hover > span { transform:translateX(3px); }
-  .app .side .profile { flex-shrink:0; }
+  .app .side .profile {
+    width:100%;
+    height:58px;
+    min-height:58px;
+    margin:auto 0 0!important;
+    padding:13px 0 2px!important;
+    align-items:center;
+    flex-shrink:0;
+  }
+  .app .side .profile > #profileAvatar {
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    flex:0 0 36px!important;
+  }
   .app.sidebar-collapsed .side .nav button {
     width:44px!important;
     height:44px!important;

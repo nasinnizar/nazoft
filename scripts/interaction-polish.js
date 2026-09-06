@@ -24,6 +24,31 @@
     accountMenu.setAttribute('aria-label', 'Account actions');
   }
 
+  const passwordEyeIcon = crossed => `<svg class="password-visibility-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.75"/>${crossed ? '<path d="m4 4 16 16"/>' : ''}</svg>`;
+  function addPasswordVisibility(input) {
+    if (!input || input.closest('.password-control')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'password-control';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'password-visibility';
+    button.innerHTML = passwordEyeIcon(false);
+    button.setAttribute('aria-label', 'Show password');
+    button.setAttribute('aria-controls', input.id);
+    button.setAttribute('aria-pressed', 'false');
+    button.onclick = () => {
+      const visible = input.type === 'text';
+      input.type = visible ? 'password' : 'text';
+      button.innerHTML = passwordEyeIcon(!visible);
+      button.setAttribute('aria-label', `${visible ? 'Show' : 'Hide'} password`);
+      button.setAttribute('aria-pressed', String(!visible));
+    };
+    wrapper.appendChild(button);
+  }
+  ['loginPassword', 'newResetPassword', 'confirmResetPassword'].forEach(id => addPasswordVisibility(document.getElementById(id)));
+
   const applyThemeBase = applyTheme;
   let themeTimer = 0;
   applyTheme = function (choice = themeChoice) {
@@ -64,4 +89,61 @@
 
   const current = typeof currentSetting === 'string' ? currentSetting : '';
   if (current === 'personalisation') renderConfigSetting(current);
+
+  const exactActivityTime = value => new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(new Date(value));
+
+  function normalizeActivityTimes() {
+    const usedTimelineEntries = new Set();
+    let changed = false;
+    feed.forEach((item, feedIndex) => {
+      if (!Array.isArray(item)) return;
+      let timestamp = Number(item[5]);
+      if (!Number.isFinite(timestamp) && item[3] && item[3] !== 'Just now') {
+        const parsed = new Date(item[3]).getTime();
+        if (Number.isFinite(parsed)) timestamp = parsed;
+      }
+      if (!Number.isFinite(timestamp)) {
+        const lead = leads.find(candidate => candidate.name === item[1]);
+        const timeline = Array.isArray(lead?.timeline) ? lead.timeline : [];
+        const match = timeline.find((entry, timelineIndex) => {
+          const key = `${lead?.leadNumber || lead?.name || 'lead'}:${timelineIndex}`;
+          if (usedTimelineEntries.has(key) || !Number.isFinite(Number(entry.at))) return false;
+          const sameDetail = String(entry.detail || '') === String(item[2] || '');
+          const feedTitle = String(item[0] || '').toLowerCase();
+          const timelineTitle = String(entry.title || '').toLowerCase();
+          return sameDetail || timelineTitle.includes(feedTitle) || feedTitle.includes(timelineTitle);
+        });
+        if (match) {
+          timestamp = Number(match.at);
+          usedTimelineEntries.add(`${lead.leadNumber || lead.name || 'lead'}:${timeline.indexOf(match)}`);
+        }
+      }
+      if (!Number.isFinite(timestamp)) return;
+      const label = exactActivityTime(timestamp);
+      if (item[3] !== label || item[5] !== timestamp) {
+        item[3] = label;
+        item[5] = timestamp;
+        changed = true;
+      }
+      usedTimelineEntries.add(`feed:${feedIndex}`);
+    });
+    return changed;
+  }
+
+  const renderTodayActivityTimeBase = renderToday;
+  renderToday = function (...args) {
+    normalizeActivityTimes();
+    return renderTodayActivityTimeBase(...args);
+  };
+  const renderActivitiesTimeBase = renderActivities;
+  renderActivities = function (...args) {
+    normalizeActivityTimes();
+    return renderActivitiesTimeBase(...args);
+  };
+  if (normalizeActivityTimes()) saveState();
+  renderActivities();
+  renderToday();
 })();

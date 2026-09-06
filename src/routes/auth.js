@@ -31,18 +31,21 @@ authRouter.post("/sign-up", authLimit, async (request, response) => {
 });
 
 const emailInput = z.object({ email: z.string().email(), purpose: z.enum(["signin", "recovery"]).default("signin") });
-const otpInput = z.object({ email: z.string().email(), token: z.string().regex(/^\d{6,8}$/) });
+const otpInput = z.object({ email: z.string().email(), token: z.string().regex(/^\d{6,8}$/), purpose: z.enum(["signin", "recovery"]).default("signin") });
 const passwordInput = z.object({ password: z.string().min(8).max(128) });
 
-authRouter.post("/otp/request", authLimit, async (request, response) => {
+authRouter.post(["/otp/request", "/otp-request"], authLimit, async (request, response) => {
   const input = emailInput.safeParse(request.body);
   if (!input.success) return response.status(400).json({ error: "Enter a valid email address." });
   const redirect = env.APP_URL ? new URL(env.APP_URL) : null;
   if (redirect) redirect.searchParams.set("auth", input.data.purpose);
-  const { error } = await requireSupabase().auth.signInWithOtp({
-    email: input.data.email,
-    options: { shouldCreateUser: false, ...(redirect ? { emailRedirectTo: redirect.toString() } : {}) },
-  });
+  const client = requireSupabase();
+  const { error } = input.data.purpose === "recovery"
+    ? await client.auth.resetPasswordForEmail(input.data.email, redirect ? { redirectTo: redirect.toString() } : undefined)
+    : await client.auth.signInWithOtp({
+      email: input.data.email,
+      options: { shouldCreateUser: false, ...(redirect ? { emailRedirectTo: redirect.toString() } : {}) },
+    });
   if (error?.status === 429) return response.status(429).json({ error: "Too many email requests. Please wait and try again." });
   if (error) console.warn("Supabase OTP request failed:", error.message);
   response.status(202).json({ message: "If this email belongs to an active account, a verification code has been sent." });
@@ -70,10 +73,11 @@ authRouter.post("/exchange", authLimit, async (request, response) => {
   response.json({ user: { id: refreshed.user.id, email: refreshed.user.email } });
 });
 
-authRouter.post("/otp/verify", authLimit, async (request, response) => {
+authRouter.post(["/otp/verify", "/otp-verify"], authLimit, async (request, response) => {
   const input = otpInput.safeParse(request.body);
   if (!input.success) return response.status(400).json({ error: "Enter the email address and verification code from your message." });
-  const { data, error } = await requireSupabase().auth.verifyOtp({ ...input.data, type: "email" });
+  const { purpose, ...credentials } = input.data;
+  const { data, error } = await requireSupabase().auth.verifyOtp({ ...credentials, type: purpose === "recovery" ? "recovery" : "email" });
   if (error || !data.session) return response.status(401).json({ error: "The verification code is invalid or expired." });
   setSessionCookies(response, data.session);
   response.json({ user: { id: data.user.id, email: data.user.email } });

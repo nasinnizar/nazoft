@@ -144,6 +144,7 @@ function filterWorkspaceForMember(state, identity) {
     item.detail || "",
     item.when || "Recorded",
     item.actor || identity.name || identity.email,
+    Number(item.at) || null,
   ]));
   const { account: _account, users: _users, reportData: _reportData, ...shared } = state;
   return {
@@ -405,12 +406,16 @@ export async function reassignOrganizationLeads(actorId, fromUserId, toUserId) {
     state.leads = (state.leads || []).map(lead => {
       if (!leadBelongsTo(lead, source.email)) return lead;
       const updated = { ...lead, owner: target.name, ownerEmail: target.email, assignedBy: actor.name || actor.email };
-      updated.timeline = [{ title: "Lead reassigned", detail: `${source.name} → ${target.name}`, when: "Just now", at: Date.now(), actor: actor.name || actor.email }, ...(updated.timeline || [])];
+      const reassignedAt = Date.now();
+      updated.timeline = [{ title: "Lead reassigned", detail: `${source.name} → ${target.name}`, when: new Date(reassignedAt).toISOString(), at: reassignedAt, actor: actor.name || actor.email }, ...(updated.timeline || [])];
       changed.push(updated);
       return updated;
     });
     state.feed = Array.isArray(state.feed) ? state.feed : [];
-    for (const lead of changed) state.feed.unshift(["Lead reassigned", lead.name, `${source.name} → ${target.name}`, "Just now", actor.email || actor.name]);
+    for (const lead of changed) {
+      const reassignedAt = Number(lead.timeline?.[0]?.at) || Date.now();
+      state.feed.unshift(["Lead reassigned", lead.name, `${source.name} → ${target.name}`, new Date(reassignedAt).toISOString(), actor.email || actor.name, reassignedAt]);
+    }
     await client.query(
       `update public.organization_workspaces set state = $2::jsonb, updated_at = now() where organization_id = $1`,
       [membership.organization_id, JSON.stringify(state)],

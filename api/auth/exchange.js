@@ -7,7 +7,7 @@ const exchangeSchema = z.object({
   refreshToken: z.string().min(20),
   expiresIn: z.coerce.number().int().positive().max(86_400).default(3600),
 });
-const otpSchema = z.object({ email: z.string().email(), token: z.string().regex(/^\d{6,8}$/) });
+const otpSchema = z.object({ email: z.string().email(), token: z.string().regex(/^\d{6,8}$/), purpose: z.enum(["signin", "recovery"]).default("signin") });
 
 export default async function handler(request, response) {
   if (!method(request, response, "POST")) return;
@@ -17,7 +17,8 @@ export default async function handler(request, response) {
     const input = (otpFlow ? otpSchema : exchangeSchema).safeParse(await parseJson(request));
     if (otpFlow) {
       if (!input.success) return json(response, 400, { error: "Enter the email address and verification code from your message." });
-      const { data, error } = await requireSupabase().auth.verifyOtp({ ...input.data, type: "email" });
+      const { purpose, ...credentials } = input.data;
+      const { data, error } = await requireSupabase().auth.verifyOtp({ ...credentials, type: purpose === "recovery" ? "recovery" : "email" });
       if (error || !data.session) return json(response, 401, { error: "The verification code is invalid or expired." });
       setSessionCookies(response, data.session);
       return json(response, 200, { user: { id: data.user.id, email: data.user.email } });

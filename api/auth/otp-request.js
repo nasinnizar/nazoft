@@ -17,7 +17,10 @@ export default async function handler(request, response) {
       redirect.searchParams.set("auth", input.data.purpose);
       options.emailRedirectTo = redirect.toString();
     }
-    const { error } = await requireSupabase().auth.signInWithOtp({ email: input.data.email, options });
+    const client = requireSupabase();
+    const { error } = input.data.purpose === "recovery"
+      ? await client.auth.resetPasswordForEmail(input.data.email, options.emailRedirectTo ? { redirectTo: options.emailRedirectTo } : undefined)
+      : await client.auth.signInWithOtp({ email: input.data.email, options });
     if (error?.status === 429) return json(response, 429, { error: "Too many email requests. Please wait and try again." });
     if (error) console.warn("Supabase OTP request failed:", error.message);
     json(response, 202, { message: "If this email belongs to an active account, a verification code has been sent." });

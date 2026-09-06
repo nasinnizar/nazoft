@@ -69,3 +69,13 @@ test('closing a client dialog preserves the client workspace and follow-up defau
   assert.doesNotMatch(html,/Auto-filled from your Follow-up automation settings/);
   assert.doesNotMatch(html,/#editLead[^;]+\$\('#drawer'\)\.classList\.remove\('open'\)/);
 });
+
+test('recent activity shows durable exact timestamps instead of relative placeholders', () => {
+  const script=read('scripts/interaction-polish.js'),service=read('src/services/workspace.js');
+  assert.match(script,/function normalizeActivityTimes\(\)/);
+  assert.match(script,/dateStyle: 'medium'/);
+  assert.match(script,/timeStyle: 'short'/);
+  assert.match(script,/item\[5\] = timestamp/);
+  assert.match(service,/Number\(item\.at\) \|\| null/);
+  assert.match(service,/reassignedAt/);
+});

@@ -31,6 +31,23 @@ test("browser authentication contains no prototype OTP", async () => {
   assert.match(html, /\/api\/auth\/otp-verify/);
 });
 
+test("password recovery uses Supabase recovery tokens and password fields can be revealed", async () => {
+  const html = await read("index.html");
+  const expressAuth = await read("src/routes/auth.js");
+  const vercelRequest = await read("api/auth/otp-request.js");
+  const vercelExchange = await read("api/auth/exchange.js");
+  const polish = await read("scripts/interaction-polish.js");
+  for (const source of [expressAuth, vercelRequest]) assert.match(source, /resetPasswordForEmail/);
+  for (const source of [expressAuth, vercelExchange]) assert.match(source, /purpose === "recovery" \? "recovery" : "email"/);
+  assert.match(expressAuth, /\["\/otp\/request", "\/otp-request"\]/);
+  assert.match(expressAuth, /\["\/otp\/verify", "\/otp-verify"\]/);
+  assert.match(html, /verifyEmailOtp\([^\n]+,'recovery'\)/);
+  assert.match(polish, /function addPasswordVisibility/);
+  assert.match(polish, /password-visibility-icon/);
+  assert.match(polish, /passwordEyeIcon\(!visible\)/);
+  assert.match(polish, /aria-pressed/);
+});
+
 test("login failures remain visible and accessible", async () => {
   const html = await read("index.html");
   assert.match(html, /id="loginError" role="alert" aria-live="polite"/);

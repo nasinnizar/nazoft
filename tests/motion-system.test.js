@@ -54,3 +54,14 @@ test('all CRM calendars share the Tasks two-month surface', () => {
   assert.match(css, /width:min\(748px,calc\(100vw - 16px\)\)/);
   assert.match(css, /report-calendar-months[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 });
+test('task and checklist controls share the accessible checkbox-group pattern', () => {
+  const html=read('index.html'),tasks=read('scripts/reports-tasks.js'),script=read('scripts/checkbox-groups.js'),css=read('styles/checkbox-groups.css');
+  assert.match(html, /styles\/checkbox-groups\.css/);
+  assert.match(html, /scripts\/checkbox-groups\.js/);
+  assert.match(tasks, /crm-task-check-control/);
+  assert.match(script, /input\[type="checkbox"\]/);
+  assert.match(script, /crm-checkbox-control/);
+  assert.match(css, /input\.crm-checkbox:checked/);
+  assert.match(css, /background-image:url/);
+  assert.match(css, /focus-visible/);
+});

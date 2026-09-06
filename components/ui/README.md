@@ -39,3 +39,13 @@ The working CRM uses `styles/form-layout.css` and `scripts/form-layout.js` to ap
 the same horizontal-label pattern to its existing HTML forms. Labels stack above
 controls below 700px so lead, task, settings, and proposal forms remain usable on
 phones. No images or context providers are required.
+
+## Checkbox group pattern
+
+`v-checkbox-group-8.tsx` and `v-checkbox-group-8-utils/` preserve the supplied
+React/shadcn API for a future frontend migration. That future project should install
+`@radix-ui/react-checkbox` and `lucide-react`. The live CRM deliberately does not
+load those unused React dependencies; `styles/checkbox-groups.css` and
+`scripts/checkbox-groups.js` provide the same accessible pattern for its existing
+native checkboxes, including task rows, permissions, proposal review, exports, and
+required-question controls.

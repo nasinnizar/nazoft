@@ -1,0 +1,47 @@
+/* Accessible checkbox-group pattern adapted from v-checkbox-group-8. */
+input.crm-checkbox {
+  appearance:none;
+  -webkit-appearance:none;
+  width:18px!important;
+  height:18px!important;
+  min-width:18px;
+  flex:0 0 18px!important;
+  margin:2px 0 0!important;
+  padding:0!important;
+  border:1.5px solid #7fa8dc!important;
+  border-radius:5px!important;
+  background-color:var(--white)!important;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:14px 14px;
+  box-shadow:none!important;
+  cursor:pointer;
+  transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .12s ease!important;
+}
+input.crm-checkbox:checked {
+  border-color:var(--blue)!important;
+  background-color:var(--blue)!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 4 4L19 6'/%3E%3C/svg%3E");
+}
+input.crm-checkbox:hover:not(:disabled) { border-color:var(--blue)!important; box-shadow:0 0 0 3px rgb(71 118 208 / 10%)!important; }
+input.crm-checkbox:focus-visible { outline:2px solid var(--blue)!important; outline-offset:3px; }
+input.crm-checkbox:active:not(:disabled) { transform:scale(.94); }
+input.crm-checkbox:disabled { cursor:not-allowed; opacity:.5; }
+.crm-checkbox-control { cursor:pointer; }
+.crm-checkbox-control:has(input.crm-checkbox:disabled) { cursor:not-allowed; }
+.permission-grid .crm-checkbox-control,
+.proposal-review.crm-checkbox-control,
+.export-check.crm-checkbox-control,
+.choice-card.crm-checkbox-control {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+}
+.permission-grid .crm-checkbox-control { padding:10px 8px; border-bottom:1px solid var(--line); }
+.permission-grid .crm-checkbox-control:last-child { border-bottom:0; }
+.proposal-review.crm-checkbox-control { padding:13px 0; line-height:1.45; }
+.export-check.crm-checkbox-control { align-items:flex-start; }
+.choice-card.crm-checkbox-control { align-items:center; }
+html[data-theme="dark"] input.crm-checkbox { background-color:#111b29!important; border-color:#58759a!important; }
+html[data-theme="dark"] input.crm-checkbox:checked { background-color:var(--blue)!important; border-color:var(--blue)!important; }
+@media(prefers-reduced-motion:reduce) { input.crm-checkbox { transition:none!important; } }

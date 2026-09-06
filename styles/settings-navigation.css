@@ -1,0 +1,163 @@
+/* Compact grouped settings navigation inspired by native system settings. */
+#settings .settings-layout {
+  grid-template-columns: minmax(232px, 258px) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+#settings .settings-menu {
+  display: grid;
+  gap: 8px;
+  padding: 10px !important;
+  border-radius: 17px !important;
+  background: color-mix(in srgb, var(--white) 94%, var(--blue2)) !important;
+  box-shadow: 0 10px 30px rgba(44, 69, 101, .07) !important;
+}
+
+#settings .settings-nav-group {
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+
+#settings .settings-menu .settings-group-toggle {
+  border-radius: 12px !important;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+#settings .settings-nav-group.is-open .settings-group-toggle {
+  border-radius: 12px 12px 8px 8px !important;
+}
+
+#settings .settings-nav-group.is-open {
+  border-color: color-mix(in srgb, var(--line) 84%, var(--blue));
+  background: var(--white);
+}
+
+#settings .settings-menu .settings-group-toggle {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 7px 10px !important;
+  color: var(--ink) !important;
+  font-size: 13px;
+  font-weight: 790;
+  letter-spacing: -.01em;
+}
+
+#settings .settings-menu .settings-group-toggle:hover {
+  background: color-mix(in srgb, var(--blue2) 58%, transparent) !important;
+}
+
+.settings-group-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--blue2);
+  color: #4776d0;
+}
+
+.settings-group-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.settings-group-chevron {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform .2s ease;
+}
+
+.settings-nav-group.is-open .settings-group-chevron { transform: rotate(180deg); }
+
+#settings .settings-group-items {
+  display: grid;
+  gap: 2px;
+  padding: 0 7px 8px 47px;
+}
+
+#settings .settings-group-items[hidden] { display: none !important; }
+
+#settings .settings-menu .settings-destination {
+  position: relative;
+  min-height: 34px;
+  padding: 7px 9px !important;
+  border-radius: 8px !important;
+  color: var(--muted) !important;
+  font-size: 12px;
+  font-weight: 680;
+}
+
+#settings .settings-menu .settings-destination::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+  transform: translateY(-50%);
+}
+
+#settings .settings-menu .settings-destination:hover {
+  background: color-mix(in srgb, var(--blue2) 58%, transparent) !important;
+  color: var(--ink) !important;
+}
+
+#settings .settings-menu .settings-destination.active {
+  background: var(--blue2) !important;
+  color: #3568c1 !important;
+  font-weight: 780;
+}
+
+#settings .settings-menu .settings-destination.active::before {
+  width: 6px;
+  height: 6px;
+  background: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 13%, transparent);
+}
+
+#settings .settings-pane {
+  min-width: 0;
+  padding: clamp(20px, 2.4vw, 30px) !important;
+  border-radius: 17px !important;
+}
+
+#settings .setting-view > h2:first-child,
+#settings .setting-view > .toolbar:first-child h2 {
+  margin-top: 0;
+  font-size: 22px;
+  letter-spacing: -.025em;
+}
+
+html[data-theme="dark"] #settings .settings-nav-group.is-open { border-color: #30445e; }
+html[data-theme="dark"] .settings-group-icon { background: #1b304c; color: #8bb7f3; }
+html[data-theme="dark"] #settings .settings-menu .settings-destination.active { color: #9fc4f7 !important; }
+
+@media (max-width: 880px) {
+  #settings .settings-layout { grid-template-columns: 1fr; }
+  #settings .settings-menu { position: static; }
+  #settings .settings-group-items { padding-left: 49px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #settings .settings-nav-group, .settings-group-chevron { transition: none; }
+}

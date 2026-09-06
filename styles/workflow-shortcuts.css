@@ -1,0 +1,14 @@
+.pipeline-toolbar { justify-content:flex-end; flex-wrap:wrap; }
+.pipeline-sort-control { display:flex; align-items:center; gap:8px; }
+.crm-control-label { color:var(--muted); font-size:11px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+.pipeline-filter-toggle { display:inline-flex; align-items:center; gap:7px; }
+.pipeline-filter-toggle svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.pipeline-filters { transition:opacity .2s ease,transform .2s ease; }
+.shortcut-dialog { position:fixed; inset:0; z-index:80; display:grid; place-items:center; padding:20px; background:#11182773; backdrop-filter:blur(2px); }
+.shortcut-card { width:min(430px,100%); padding:22px; border:1px solid var(--line); border-radius:18px; background:var(--white); box-shadow:0 24px 70px #17233d38; }
+.shortcut-card h2 { margin:2px 0 0; }
+.shortcut-list { display:grid; margin-top:12px; border-top:1px solid var(--line); }
+.shortcut-list > div { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:13px 2px; border-bottom:1px solid var(--line); font-weight:700; }
+kbd { display:inline-flex; min-width:28px; min-height:25px; align-items:center; justify-content:center; padding:2px 7px; border:1px solid var(--line); border-bottom-width:2px; border-radius:7px; background:var(--bg); color:var(--muted); font:700 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+@media(max-width:650px){.pipeline-toolbar{justify-content:stretch}.pipeline-sort-control{flex:1}.pipeline-sort-control .select-ui{flex:1}.pipeline-filter-toggle{flex:1;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.pipeline-filters{transition:none}}

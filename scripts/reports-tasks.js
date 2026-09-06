@@ -10,7 +10,9 @@
     const active=new Set(generated.map(task=>task.id));
     return [...tasks.filter(task=>String(task.ownerEmail).toLowerCase()===me() && (!task.auto || task.completedAt || active.has(task.id))),...generated.filter(task=>!tasks.some(saved=>saved.id===task.id))];
   };
-  const canEdit = () => hasPermission('Edit leads');
+  const canCreate = () => hasPermission('Create tasks') || hasPermission('Edit leads');
+  const canEdit = () => hasPermission('Edit tasks') || hasPermission('Edit leads');
+  const canComplete = () => hasPermission('Complete tasks') || hasPermission('Edit leads');
   const dateText = value => {
     if (!value || Number.isNaN(new Date(value).getTime())) return 'Not recorded';
     const region = accountPreferences.regional || {};
@@ -53,7 +55,7 @@
   form.querySelectorAll('.field').forEach(field => { const input=field.querySelector('input,select,textarea'); if(input){input.id=`crmTask-${input.name}`;field.querySelector('label').htmlFor=input.id;} });
   taskModal.addEventListener('keydown',event=>{if(event.key==='Escape')taskModal.classList.remove('open');});
   function editTask(task = {}) {
-    if (!canEdit()) return toast('Your role cannot edit tasks');
+    if (task.id ? !canEdit() : !canCreate()) return toast(`Your role cannot ${task.id ? 'edit' : 'create'} tasks`);
     form.reset();
     dateManual=!!task.id;suggestion.textContent='';
     if(task.auto){const index=leads.findIndex(lead=>lead.leadNumber===task.leadNumber);if(index>=0)openLead(index);return;}
@@ -63,10 +65,11 @@
   }
   taskPage.querySelector('#createCrmTask').onclick = () => editTask();
   form.onsubmit = event => {
-    event.preventDefault(); if (!canEdit()) return;
+    event.preventDefault();
     const data = Object.fromEntries(new FormData(form));
     if (!data.title.trim() || Number.isNaN(new Date(data.dueAt).getTime())) return;
     const existing = ownTasks().find(task => task.id === data.id);
+    if (existing ? !canEdit() : !canCreate()) return;
     const record = {...existing,...data,id:existing?.id || crypto.randomUUID(),ownerEmail:me(),createdAt:existing?.createdAt || Date.now(),completedAt:existing?.completedAt || null,notifiedAt:null};
     if (existing) tasks[tasks.indexOf(existing)] = record; else tasks.push(record);
     saveState(); taskModal.classList.remove('open'); renderTasks(); toast('Task saved');
@@ -79,8 +82,9 @@
       const date = scope === 'completed' ? localDay(task.completedAt) : task.dueAt.slice(0,10);
       return (scope === 'all' || (scope === 'completed' ? task.completedAt : !task.completedAt)) && (scope !== 'today' || task.dueAt.slice(0,10) === todayKey) && (scope !== 'overdue' || new Date(task.dueAt) < today) && (!day || (date >= day && date <= taskRangeEnd));
     }).sort((a,b) => scope === 'completed' ? b.completedAt-a.completedAt : new Date(a.dueAt)-new Date(b.dueAt));
-    taskPage.querySelector('#crmTaskList').innerHTML = list.map(task => `<article class="crm-task-row ${task.completedAt?'done':new Date(task.dueAt)<today?'overdue':''}"><label class="crm-task-check-control"><input type="checkbox" aria-label="Complete ${safe(task.title)}" data-task-done="${safe(task.id)}" ${task.completedAt?'checked':''} ${canEdit()?'':'disabled'}><span class="task-copy"><b>${safe(task.title)}</b><small>${safe(task.kind)} · Due ${safe(dateText(task.dueAt))}</small>${task.details?`<small>${safe(task.details)}</small>`:''}${task.completedAt?`<small>Completed ${safe(dateText(task.completedAt))}</small>`:''}</span></label>${task.leadNumber?`<button class="btn small" data-task-lead="${safe(task.leadNumber)}">Open lead</button>`:''}<button class="btn small" data-task-edit="${safe(task.id)}">Edit</button></article>`).join('') || '<div class="crm-empty">No tasks in this view.</div>';
-    taskPage.querySelectorAll('[data-task-done]').forEach(input => input.onchange = () => { if (!canEdit()) return; const task = ownTasks().find(item => item.id === input.dataset.taskDone); if(!tasks.some(saved=>saved.id===task.id))tasks.push(task);task.completedAt = input.checked ? Date.now() : null; saveState(); renderTasks(); });
+    taskPage.querySelector('#createCrmTask').hidden=!canCreate();
+    taskPage.querySelector('#crmTaskList').innerHTML = list.map(task => `<article class="crm-task-row ${task.completedAt?'done':new Date(task.dueAt)<today?'overdue':''}"><label class="crm-task-check-control"><input type="checkbox" aria-label="Complete ${safe(task.title)}" data-task-done="${safe(task.id)}" ${task.completedAt?'checked':''} ${canComplete()?'':'disabled'}><span class="task-copy"><b>${safe(task.title)}</b><small>${safe(task.kind)} · Due ${safe(dateText(task.dueAt))}</small>${task.details?`<small>${safe(task.details)}</small>`:''}${task.completedAt?`<small>Completed ${safe(dateText(task.completedAt))}</small>`:''}</span></label>${task.leadNumber?`<button class="btn small" data-task-lead="${safe(task.leadNumber)}">Open lead</button>`:''}${canEdit()?`<button class="btn small" data-task-edit="${safe(task.id)}">Edit</button>`:''}</article>`).join('') || '<div class="crm-empty">No tasks in this view.</div>';
+    taskPage.querySelectorAll('[data-task-done]').forEach(input => input.onchange = () => { if (!canComplete()) return; const task = ownTasks().find(item => item.id === input.dataset.taskDone); if(!tasks.some(saved=>saved.id===task.id))tasks.push(task);task.completedAt = input.checked ? Date.now() : null; saveState(); renderTasks(); });
     taskPage.querySelectorAll('[data-task-edit]').forEach(button => button.onclick = () => editTask(ownTasks().find(task => task.id === button.dataset.taskEdit)));
     taskPage.querySelectorAll('[data-task-lead]').forEach(button => button.onclick = () => { const index = leads.findIndex(lead => lead.leadNumber === button.dataset.taskLead); if(index>=0) openLead(index); else toast('This lead is no longer assigned to you'); });
   }
@@ -163,6 +167,7 @@
     picker.querySelector('aside button').focus();window.addEventListener('resize',position);
   };
   setTaskRange();
+  upgradeSelects(taskPage);
   function remindTasks() {
     let changed=false;
     for(const task of ownTasks()) if(!task.completedAt && !task.notifiedAt && new Date(task.dueAt).getTime()<=Date.now()) {
@@ -179,7 +184,11 @@
   const existing = document.createElement('div');
   [...reports.children].filter(element=>!element.classList.contains('head')).forEach(element=>existing.append(element));
   const tabs = document.createElement('div'); tabs.className='crm-report-tabs';
-  tabs.innerHTML = ['Performance','Activity summary','Won clients','Lost clients','Open pipeline','Follow-ups'].map((name,index)=>`<button class="btn ${index===0?'active':''}" data-report-view="${safe(name)}">${safe(name)}</button>`).join('');
+  const reportViews = [
+    ['Performance','activity'],['Activity summary','clock'],['Won clients','check'],
+    ['Lost clients','alert'],['Open pipeline','columns'],['Follow-ups','calendar']
+  ];
+  tabs.innerHTML = reportViews.map(([name,icon],index)=>`<button class="btn ${index===0?'active':''}" data-report-view="${safe(name)}">${uiIcon(icon)}<span>${safe(name)}</span></button>`).join('');
   const detail = document.createElement('div');
   detail.innerHTML='<div class="crm-work-toolbar"><input type="hidden" id="reportFrom"><input type="hidden" id="reportTo"><button type="button" class="btn" id="reportRange" aria-haspopup="dialog">Choose dates</button><button class="btn" id="downloadOutcomeReport">Download Excel</button></div><p class="muted">Filters use close dates for won deals, recorded loss dates for lost deals, next action dates for follow-ups, and creation dates for open leads. Undated records appear without a date filter.</p><div class="crm-report-list" id="outcomeRows"></div>';
   detail.hidden=true; reports.append(tabs,existing,detail);
@@ -249,6 +258,28 @@
     detail.querySelector('#outcomeRows').innerHTML=`<table><thead><tr>${reportRows[0].map(cell=>`<th>${safe(cell)}</th>`).join('')}</tr></thead><tbody>${reportRows.slice(1).map(row=>`<tr>${row.map(cell=>`<td>${safe(cell??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>${reportRows.length===1?'<div class="crm-empty">No matching records.</div>':''}`;
   }
   tabs.querySelectorAll('button').forEach(button=>button.onclick=()=>{view=button.dataset.reportView;tabs.querySelectorAll('button').forEach(item=>item.classList.toggle('active',item===button));existing.hidden=view!=='Performance';reports.querySelector('.head .actions').style.display=view==='Performance'?'':'none';detail.hidden=view==='Performance';if(!detail.hidden)renderReport();});
+  const activityReport=existing.querySelector('#activityReport'),salesReport=existing.querySelector('#salesReport'),innerTabs=existing.querySelector('#reportTabs');
+  const sourcesReport=document.createElement('div');sourcesReport.id='sourcesReport';sourcesReport.className='hidden';salesReport.after(sourcesReport);
+  function renderSourcesProducts(){
+    const active=leads.filter(lead=>!lead.archived),won=active.filter(lead=>lead.status==='Won');
+    const summarize=key=>{
+      const rows=new Map();
+      active.forEach(lead=>{const name=lead[key]||'Not recorded',row=rows.get(name)||{name,total:0,won:0,value:0};row.total++;if(lead.status==='Won'){row.won++;row.value+=Number(lead.closedValue??lead.value??0);}rows.set(name,row);});
+      return [...rows.values()].sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name));
+    };
+    const table=(heading,rows)=>`<section class="panel"><h2>${heading}</h2><div class="crm-report-list"><table><thead><tr><th>Name</th><th>Leads</th><th>Won</th><th>Win rate</th><th>Won value</th></tr></thead><tbody>${rows.map(row=>`<tr><td><b>${safe(row.name)}</b></td><td>${row.total}</td><td>${row.won}</td><td>${row.total?Math.round(row.won/row.total*100):0}%</td><td>${money(row.value)}</td></tr>`).join('')}</tbody></table>${rows.length?'':'<div class="crm-empty">No attribution data recorded.</div>'}</div></section>`;
+    sourcesReport.innerHTML=`<div class="metrics"><div class="metric"><label>Recorded sources</label><strong>${summarize('source').length}</strong><em>Across active leads</em></div><div class="metric"><label>Products & services</label><strong>${summarize('product').length}</strong><em>With linked opportunities</em></div><div class="metric"><label>Attributed wins</label><strong>${won.length}</strong><em>${money(won.reduce((sum,lead)=>sum+Number(lead.closedValue??lead.value??0),0))}</em></div></div><div class="grid2 report-attribution-grid">${table('Lead sources',summarize('source'))}${table('Products & services',summarize('product'))}</div>`;
+  }
+  innerTabs?.setAttribute('aria-label','Performance detail');
+  innerTabs?.querySelectorAll('[data-report]').forEach(button=>button.onclick=()=>{
+    const target=button.dataset.report;
+    innerTabs.querySelectorAll('[data-report]').forEach(item=>item.classList.toggle('active',item===button));
+    activityReport.classList.toggle('hidden',target!=='activity');
+    salesReport.classList.toggle('hidden',target!=='pipeline');
+    sourcesReport.classList.toggle('hidden',target!=='sources');
+    if(target==='pipeline')renderSalesPerformance();
+    if(target==='sources')renderSourcesProducts();
+  });
   detail.querySelectorAll('input').forEach(input=>input.onchange=renderReport);
   detail.querySelector('#downloadOutcomeReport').onclick=()=>{if(!hasPermission('Export data'))return toast('Your role cannot export reports');renderReport();downloadBlob(NazoftFileFormats.createXlsxWorkbook([{name:view,rows:reportRows.map((cells,index)=>({kind:index?'data':'header',cells}))}]),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','CRM-report.xlsx');};
 })();

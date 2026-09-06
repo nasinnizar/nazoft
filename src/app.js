@@ -119,7 +119,7 @@ app.get('/scripts/meta-connect.js', (_request, response) => {
   response.type('application/javascript').set('Cache-Control','no-cache').sendFile(path.join(root,'scripts','meta-connect.js'));
 });
 app.get('/scripts/lead-integrations.js', (_request,response)=>response.type('application/javascript').set('Cache-Control','no-cache').sendFile(path.join(root,'scripts','lead-integrations.js')));
-for(const script of ['proposal-pdf.js','proposals.js','protected-routes.js','form-layout.js'])app.get(`/scripts/${script}`,(_request,response)=>response.type('application/javascript').set('Cache-Control','no-cache').sendFile(path.join(root,'scripts',script)));
+for(const script of ['proposal-pdf.js','proposals.js','protected-routes.js','form-layout.js','checkbox-groups.js','alerts.js','settings-navigation.js','interaction-polish.js','workflow-shortcuts.js','team-access.js','sidebar-customization.js'])app.get(`/scripts/${script}`,(_request,response)=>response.type('application/javascript').set('Cache-Control','no-cache').sendFile(path.join(root,'scripts',script)));
 app.get("/favicon.ico", (_request, response) => response.redirect(302, "/nazoft-logo.svg?v=crm-1"));
 app.get("/nazoft-crm-wordmark.svg", (_request, response) => response.sendFile(path.join(root, "nazoft-crm-wordmark.svg")));
 app.get(['/app','/app/{*path}'],protectedPage({authenticate:resolveUser,workspace:getWorkspace}),(_request,response)=>response.sendFile(path.join(root,'index.html')));

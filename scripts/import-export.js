@@ -48,7 +48,7 @@
   const openLeadTimelineBase = openLead;
   openLead = function (index) {
     let result = openLeadTimelineBase(index), lead = leads[index], temperature = $('#drawerLeadStatusTop');
-    if (temperature && !temperature.querySelector('option[value=""]')) temperature.insertAdjacentHTML('afterbegin', '<option value="">Choose temperature</option>');
+    if (temperature && !temperature.querySelector('option[value=""]')) temperature.insertAdjacentHTML('afterbegin', '<option value="">Choose status</option>');
     if (temperature && lead) { temperature.value = lead.temperature || ''; refreshEnhancedSelect(temperature); }
     configureLeadPage(lead);
     if (lead) renderCompleteLeadTimeline(lead);
@@ -112,7 +112,7 @@
     if (temperatureWrap && !temperatureWrap.parentElement.classList.contains('lead-page-control')) {
       let control = document.createElement('label');
       control.className = 'lead-page-control lead-temperature-control';
-      control.innerHTML = '<span>Lead temperature</span>';
+      control.innerHTML = '<span>Lead status</span>';
       temperatureWrap.parentNode.insertBefore(control, temperatureWrap);
       control.appendChild(temperatureWrap);
     }
@@ -147,7 +147,7 @@
     return value === 'hot' ? 'Hot' : value === 'warm' ? 'Warm' : value === 'cold' ? 'Cold' : 'Not set';
   };
   const temperatureSelect = $('#leadForm [name="temperature"]');
-  if (temperatureSelect && !temperatureSelect.querySelector('option[value=""]')) temperatureSelect.insertAdjacentHTML('afterbegin', '<option value="">Choose temperature</option>');
+  if (temperatureSelect && !temperatureSelect.querySelector('option[value=""]')) temperatureSelect.insertAdjacentHTML('afterbegin', '<option value="">Choose status</option>');
   if (temperatureSelect) { temperatureSelect.value = ''; refreshEnhancedSelect(temperatureSelect); }
   const resetTemperatureBase = resetLeadForm;
   resetLeadForm = function () { resetTemperatureBase(); let select = $('#leadForm [name="temperature"]'); select.value = ''; refreshEnhancedSelect(select); };

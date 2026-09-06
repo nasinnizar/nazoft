@@ -45,14 +45,17 @@
   new MutationObserver(syncSwitches).observe(document.querySelector('#settingsPane'),{childList:true,subtree:true});
   syncSwitches();
 
-  // Apply the reduced FlowButton treatment to action buttons as they are rendered.
-  // Controls with specialized geometry keep their native interaction styling.
+  // Reserve the expressive FlowButton treatment for primary actions. Secondary,
+  // contextual and menu controls use quiet colour feedback without moving.
   const specializedButtons = '.nav,.tabs,.crm-report-tabs,.pretty-select,.theme-options,.date-picker-head,.date-grid,.date-quick,.report-calendar-head,.report-calendar-grid,.report-calendar-presets,.task-range-heading,.task-range-grid,.task-range-presets';
   function syncFlowButtons(root) {
+    if (!root) return;
     const buttons=[...(root.querySelectorAll?.('button.btn') || [])];
     if(root.matches?.('button.btn'))buttons.push(root);
     buttons.forEach(button=>{
-      const eligible=!!button.textContent.trim() && !button.closest(specializedButtons) && !button.matches('.close,.switch-button,.sidebar-toggle,.notification-button,.icon-button,.profile-settings,[aria-haspopup],[role="tab"],[role="switch"],[aria-label*="month"],#reportRange,#taskDateRange') && !/^[\d\s×✕‹›←→+−⋯.]+$/.test(button.textContent.trim());
+      const majorAction=button.classList.contains('primary') || button.matches('#quickActivity,.top-actions .addLead');
+      const contextual=button.closest('#leadMenu,.lead-followup-panel,#clientInfo,.crm-report-tabs,.report-tabs');
+      const eligible=majorAction && !contextual && !!button.textContent.trim() && !button.closest(specializedButtons) && !button.matches('.close,.switch-button,.sidebar-toggle,.notification-button,.icon-button,.profile-settings,[aria-haspopup],[role="tab"],[role="switch"],[aria-label*="month"],#reportRange,#taskDateRange') && !/^[\d\s×✕‹›←→+−⋯.]+$/.test(button.textContent.trim());
       button.classList.toggle('crm-flow-button',eligible);
     });
   }

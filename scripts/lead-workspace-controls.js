@@ -37,21 +37,33 @@
   drawer.append(mainColumn, sideColumn);
 
   const menu = drawer.querySelector('#leadMenu');
+  menu?.querySelector('[data-lead-action="notes"]')?.remove();
+  if (menu && !menu.querySelector('.lead-menu-close')) {
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'lead-menu-close';
+    close.setAttribute('aria-label', 'Close client actions');
+    close.innerHTML = typeof uiIcon === 'function' ? uiIcon('x') : '×';
+    close.onclick = () => { menu.classList.add('hidden'); drawer.querySelector('#moreLead')?.focus(); };
+    menu.prepend(close);
+  }
+  document.addEventListener('pointerdown', event => {
+    if (menu?.classList.contains('hidden') || event.target.closest('#leadMenu,#moreLead')) return;
+    menu.classList.add('hidden');
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || menu?.classList.contains('hidden')) return;
+    menu.classList.add('hidden');
+    drawer.querySelector('#moreLead')?.focus();
+  });
   const vcardEscape = value => String(value || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
-  ['notes', 'uncontacted', 'phonebook', 'share'].forEach(action => {
+  ['uncontacted', 'phonebook', 'share'].forEach(action => {
     const button = menu?.querySelector(`[data-lead-action="${action}"]`);
     if (!button) return;
     button.onclick = async () => {
       const lead = leads[currentLead];
       menu.classList.add('hidden');
       if (!lead) return;
-      if (action === 'notes') {
-        const input = drawer.querySelector('#noteText');
-        input.value = lead.notes || '';
-        input.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        input.focus({ preventScroll: true });
-        return;
-      }
       if (action === 'uncontacted') {
         if (!hasPermission('Edit leads')) return toast('Your role cannot edit leads');
         const index = stages.findIndex(stage => stage[0].toLowerCase() === 'not connected');
@@ -73,10 +85,15 @@
       }
       const summary = [lead.name, lead.company, lead.phone, lead.email, lead.product].filter(Boolean).join('\n');
       try {
-        await navigator.clipboard.writeText(summary);
-        toast('Client details copied for sharing');
+        if (navigator.share) {
+          await navigator.share({ title: `${lead.name} · client details`, text: summary });
+          toast('Client details shared');
+        } else {
+          await navigator.clipboard.writeText(summary);
+          toast('Client details copied for sharing');
+        }
       } catch {
-        window.prompt('Copy these client details to share:', summary);
+        if (!navigator.share) window.prompt('Copy these client details to share:', summary);
       }
     };
   });
@@ -224,6 +241,8 @@
       const label = row.querySelector('.muted')?.textContent.trim();
       if (label === 'Notes') row.remove();
       if (label === 'Opportunity size' && hasPermission('Edit leads')) {
+        row.classList.add('client-info-editable');
+        row.innerHTML = `<span class="muted">Opportunity size</span><span class="client-info-value">SAR ${Number(lead.value || 0).toLocaleString()}</span>`;
         const edit = document.createElement('button');
         edit.type = 'button';
         edit.className = 'btn small workspace-value-change';
@@ -236,10 +255,11 @@
       }
     });
     const productRow = document.createElement('p');
-    productRow.innerHTML = `<span class="muted">Product / service</span><br><span>${safe(lead.product || 'Not selected')}</span>`;
+    productRow.className = 'client-info-editable';
+    productRow.innerHTML = `<span class="muted">Product / service</span><span class="client-info-value">${safe(lead.product || 'Not selected')}</span>`;
     if (hasPermission('Edit leads')) {
       const change = document.createElement('button');
-      change.type = 'button'; change.className = 'btn small'; change.textContent = 'Change';
+      change.type = 'button'; change.className = 'btn small workspace-value-change'; change.textContent = 'Change';
       change.onclick = () => editClientValue(lead, 'product'); productRow.appendChild(change);
     }
     document.querySelector('#clientInfo').appendChild(productRow);

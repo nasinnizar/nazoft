@@ -49,3 +49,14 @@ load those unused React dependencies; `styles/checkbox-groups.css` and
 `scripts/checkbox-groups.js` provide the same accessible pattern for its existing
 native checkboxes, including task rows, permissions, proposal review, exports, and
 required-question controls.
+
+## Alert pattern
+
+The supplied light-alert styling is adapted to the live CRM in `styles/alerts.css`
+and `scripts/alerts.js`. It provides semantic success, error, warning, and
+information variants; fixed-size icons; dismiss controls; stacked announcements;
+matching inline form feedback; and a consistent notification inbox. Existing
+actions continue to call the shared `toast()` helper, so workflow behavior remains
+unchanged. A future React frontend can place the supplied `alert-1.tsx` primitive
+in this directory and install `lucide-react` and `class-variance-authority`; the
+current runtime does not load unused React dependencies.

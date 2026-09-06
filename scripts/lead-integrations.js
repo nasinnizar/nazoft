@@ -1,5 +1,5 @@
 (() => {
-  const kinds={google:'Google Ads',website:'Website forms'};
+  const kinds={google:'Google Ads',website:'Forms & webhooks'};
   const anchor=document.querySelector('[data-setting="meta"]');
   Object.entries(kinds).reverse().forEach(([kind,title])=>{
     const button=document.createElement('button');button.dataset.setting=kind;button.textContent=title;
@@ -8,7 +8,7 @@
   const baseHtml=settingsHtml;
   settingsHtml=function(name){
     if(!kinds[name])return baseHtml(name);
-    return `<h2>${kinds[name]}</h2><p class="muted">${name==='google'?'Receive new Google Ads lead-form submissions directly into this workspace. This does not manage ad campaigns or import ad performance.':'Connect an existing website form through its server. Never expose the connection key in browser JavaScript or HTML.'}</p><div id="inboundStatus" role="status">Checking setup…</div><div id="inboundControls"></div>`;
+    return `<h2>${kinds[name]}</h2><p class="muted">${name==='google'?'Receive new Google Ads lead-form submissions directly into this workspace. This does not manage ad campaigns or import ad performance.':'Connect Google Forms or an existing website form through a secure server webhook. Never expose the connection key in public browser JavaScript or HTML.'}</p>${name==='website'?'<div class="preference-intro"><div><b>Google Forms</b><div>Add an Apps Script form-submit trigger that sends each response to the webhook below. Map responses to submission_id, name, email, phone, and optional company fields.</div></div></div>':''}<div id="inboundStatus" role="status">Checking setup…</div><div id="inboundControls"></div>`;
   };
   const baseRender=renderConfigSetting;
   renderConfigSetting=function(name=currentSetting){baseRender(name);if(kinds[name])load(name);};

@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import '../scripts/proposal-pdf.js';
 const {totals,defaults}=globalThis.CrmProposalPdf;
-test('proposal workflow assigns numbers on save or send and requires confirmation for stage change',async()=>{
+test('proposal workflow assigns numbers on save and keeps the editor actions focused',async()=>{
   const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
   assert.ok(!html.includes("if(stageName==='Proposal sent')ensureProposalNumber"));
   const script=await readFile(new URL('../scripts/proposals.js',import.meta.url),'utf8');
-  assert.doesNotMatch(script,/>Generate proposal number</);assert.match(script,/proposalNumberPreview/);assert.match(script,/ensureReference/);assert.match(script,/Confirm sent/);assert.match(script,/pendingDelivery.snapshot/);assert.match(script,/name="note"/);
+  assert.doesNotMatch(script,/>Generate proposal number</);assert.match(script,/proposalNumberPreview/);assert.match(script,/ensureReference/);assert.match(script,/name="note"/);
   assert.match(script,/data-proposal-status="draft"/);assert.match(script,/data-proposal-status="saved"/);assert.match(script,/data-proposal-status="sent"/);
-  assert.match(script,/data-save-draft/);assert.match(script,/>Save</);assert.match(script,/uiIcon\(channel==='WhatsApp'\?'whatsapp':'mail'\)/);
+  assert.match(script,/data-save-draft/);assert.match(script,/>Save</);assert.match(script,/data-download/);
+  assert.doesNotMatch(script,/data-preview|Send via WhatsApp|Send via Email|Confirm sent|Download PDF to attach|Open Email|pendingDelivery/);
   assert.match(script,/\['reference','Proposal reference preview'\]/);assert.match(script,/\['date','Date','date'\]/);
   assert.match(html,/input\.closest\('dialog\[open\]'\)\|\|document\.body/);
 });

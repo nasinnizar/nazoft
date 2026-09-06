@@ -7,7 +7,8 @@
 .crm-task-row small { display:block; color:var(--muted); margin-top:3px; font-size:12px; line-height:1.45; }
 .crm-task-row.done b { text-decoration:line-through; color:var(--muted); }
 .crm-task-row.done .task-copy { opacity:.72; }
-.crm-task-row.overdue { border-left:3px solid var(--red); }
+.crm-task-row.overdue { position:relative; }
+.crm-task-row.overdue:before { content:''; position:absolute; left:7px; top:23px; width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 14%,transparent); }
 .crm-report-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
 .crm-report-tabs .active { background:var(--blue2); color:var(--blue); }
 .crm-report-list { overflow:auto; border:1px solid var(--line); border-radius:12px; background:var(--white); }
@@ -58,4 +59,4 @@
 .task-range-footer { display:flex; gap:8px; align-items:center; margin-top:18px; }
 .task-range-footer > span { flex:1; font-size:11px; color:var(--muted); }
 @media(max-width:640px) { .task-range-picker:popover-open { flex-direction:column; } .task-range-presets { flex-basis:auto; display:flex; flex-wrap:wrap; gap:4px; border-right:0; border-bottom:1px solid var(--line); padding:10px; } .task-range-presets strong { width:100%; margin:0; } .task-range-presets button { width:auto; margin:0; padding:7px; } .task-range-months,.report-calendar-months { grid-template-columns:1fr; gap:8px; } .task-range-month:nth-child(2),.report-calendar-month:nth-child(2) { display:none; } .task-range-main,.report-range-main { padding:12px 8px; } .task-range-heading select { font-size:11px; } #taskDateRange { min-width:240px; } }
-@media(max-width:600px) { .crm-task-row { flex-wrap:wrap; padding:0 12px 12px; } .crm-task-check-control { flex-basis:100%; padding-bottom:4px; } .crm-work-toolbar > * { flex:1; min-width:130px; } }
+@media(max-width:600px) { .crm-task-row { flex-wrap:wrap; padding:0 12px 12px; } .crm-task-row.overdue:before { left:4px; } .crm-task-check-control { flex-basis:100%; padding-bottom:4px; } .crm-work-toolbar > * { flex:1; min-width:130px; } }

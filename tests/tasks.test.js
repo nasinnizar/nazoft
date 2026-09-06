@@ -5,7 +5,7 @@ import test from 'node:test';
 
 const source = await readFile(new URL('../src/services/workspace.js', import.meta.url), 'utf8');
 const context = vm.createContext({});
-vm.runInContext(source.slice(source.indexOf('const writableRoles'), source.indexOf('async function findMembership')), context);
+vm.runInContext(source.slice(source.indexOf('const organizationPlanSeats'), source.indexOf('async function findMembership')).replace('export const permissionCatalog', 'const permissionCatalog'), context);
 const identity = { email: 'sales@example.com', name: 'Sales' };
 const mine = { id: 'mine', ownerEmail: identity.email, completedAt: 123 };
 const other = { id: 'other', ownerEmail: 'other@example.com' };

@@ -193,13 +193,14 @@ test("spreadsheet mapping, branded reports, and notification clearing are availa
   assert.match(experience, /data-notification-clear/);
 });
 
-test("lead temperature is opt-in and timeline entries use durable timestamps", async () => {
+test("lead status is opt-in and timeline entries use durable timestamps", async () => {
   const html = await read("index.html");
   const importExport = await read("scripts/import-export.js");
   assert.match(html, /if\(l\.temperature===undefined\|\|l\.temperature===null\)l\.temperature=''/);
   assert.match(html, /status:'Uncontacted',temperature:'',score:null/);
   assert.match(html, /temperature=\(\{Hot:18,Warm:9,Cold:0\}\[leadTemperature\(l\)\]\?\?0\)/);
-  assert.match(importExport, /Choose temperature/);
+  assert.match(importExport, /Choose status/);
+  assert.match(importExport, /<span>Lead status<\/span>/);
   assert.match(importExport, /at = Date\.now\(\)/);
   assert.match(importExport, /Earlier activity · exact time unavailable/);
   assert.match(importExport, /timeline-important/);
@@ -343,8 +344,40 @@ test("unauthenticated pages never hydrate cached CRM client data", async () => {
 test("administrator authorization happens before an invitation is sent", async () => {
   for (const path of ["src/routes/users.js", "api/users.js"]) {
     const source = await read(path);
-    assert.ok(source.indexOf("await requireOrganizationAdmin") < source.indexOf("inviteUserByEmail"));
+    assert.ok(source.indexOf("await requireOrganizationSeat") < source.indexOf("inviteUserByEmail"));
+    assert.match(source, /deleteUser\(/);
   }
+});
+
+test("team plans cap seats and role permissions remain administrator controlled", async () => {
+  const [migration, service, route, client] = await Promise.all([
+    read("migrations/006_team_plans_and_permissions.sql"), read("src/services/workspace.js"),
+    read("src/routes/users.js"), read("scripts/team-access.js"),
+  ]);
+  assert.match(migration, /default 'starter'/);
+  assert.match(service, /starter: 5, growth: 15, scale: 50/);
+  assert.match(service, /where id = \$1 for update/);
+  assert.match(route, /updateOrganizationRolePermissions/);
+  assert.match(client, /Roles & permissions/);
+  assert.match(client, /team seats used/);
+});
+
+test("custom roles support grouped granular permissions without weakening tenant isolation", async () => {
+  const [migration, service, route, client] = await Promise.all([
+    read("migrations/008_custom_roles.sql"), read("src/services/workspace.js"),
+    read("src/routes/users.js"), read("scripts/team-access.js"),
+  ]);
+  assert.match(migration, /role ~ '\^\[a-z\]/);
+  assert.match(migration, /member\.organization_id = organization_workspaces\.organization_id/);
+  assert.match(migration, /member\.user_id = \(select auth\.uid\(\)\)/);
+  assert.match(service, /permissionCatalog/);
+  assert.match(service, /assertTaskChangesAllowed/);
+  assert.match(service, /assertLeadChangesAllowed/);
+  assert.match(service, /assertConfigurationChangesAllowed/);
+  assert.match(route, /z\.record/);
+  assert.match(client, /Create custom role/);
+  assert.match(client, /Leads & clients/);
+  assert.match(client, /Team & security/);
 });
 
 test("Vercel authentication attempts use a durable server-only limiter", async () => {

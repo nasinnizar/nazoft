@@ -4,19 +4,19 @@ import { z } from "zod";
 import { env } from "../config/env.js";
 import { requireAuth } from "../middleware/auth.js";
 import { createAdminClient } from "../services/supabase.js";
-import { addOrganizationMember, listOrganizationMembers, reassignOrganizationLeads, removeOrganizationMember, requireOrganizationAdmin, updateOrganizationMember } from "../services/workspace.js";
+import { addOrganizationMember, listOrganizationMembers, permissionCatalog, reassignOrganizationLeads, removeOrganizationMember, requireOrganizationSeat, updateOrganizationMember, updateOrganizationRolePermissions } from "../services/workspace.js";
 
 export const usersRouter = Router();
 const inviteLimit = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: true, legacyHeaders: false });
 const inviteInput = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().email(),
-  role: z.enum(["admin", "manager", "sales", "viewer"]),
+  role: z.string().regex(/^[a-z][a-z0-9_-]{1,31}$/),
 });
 const memberInput = z.object({
   id: z.string().uuid(),
   name: z.string().trim().min(1).max(100),
-  role: z.enum(["admin", "manager", "sales", "viewer"]),
+  role: z.string().regex(/^[a-z][a-z0-9_-]{1,31}$/),
   status: z.enum(["active", "suspended"]),
 });
 const reassignInput = z.object({
@@ -25,6 +25,10 @@ const reassignInput = z.object({
   toUserId: z.string().uuid(),
 });
 const memberIdInput = z.object({ id: z.string().uuid() });
+const permission = z.enum(permissionCatalog);
+const accessInput = z.object({
+  rolePermissions: z.record(z.string().regex(/^[a-z][a-z0-9_-]{1,31}$/), z.array(permission)),
+});
 
 usersRouter.use(requireAuth);
 
@@ -39,25 +43,50 @@ usersRouter.get("/", async (request, response, next) => {
 usersRouter.post("/invite", inviteLimit, async (request, response, next) => {
   const input = inviteInput.safeParse(request.body);
   if (!input.success) return response.status(400).json({ error: "Enter a name, valid email address, and supported role." });
+  let invitedUser = null;
+  let admin = null;
   try {
-    await requireOrganizationAdmin(request.user.id);
+    await requireOrganizationSeat(request.user.id);
     const options = { data: { display_name: input.data.name } };
     if (env.APP_URL) options.redirectTo = env.APP_URL;
-    const { data, error } = await createAdminClient().auth.admin.inviteUserByEmail(input.data.email, options);
+    admin = createAdminClient();
+    const { data, error } = await admin.auth.admin.inviteUserByEmail(input.data.email, options);
     if (error || !data.user) {
       const message = error?.message?.toLowerCase().includes("already")
         ? "This email already has an account. Add existing-user support before assigning it to another organization."
         : "Unable to send the invitation. Check Supabase SMTP and redirect URL settings.";
       return response.status(400).json({ error: message });
     }
-    await addOrganizationMember(request.user.id, data.user, input.data.role, input.data.name);
+    invitedUser = data.user;
+    await addOrganizationMember(request.user.id, invitedUser, input.data.role, input.data.name);
     response.status(201).json({ user: { id: data.user.id, email: data.user.email, name: input.data.name, role: input.data.role, status: "invited" } });
+  } catch (error) {
+    if (invitedUser && admin) await admin.auth.admin.deleteUser(invitedUser.id).catch(() => {});
+    next(error);
+  }
+});
+
+usersRouter.patch("/access", async (request, response, next) => {
+  const input = accessInput.safeParse(request.body);
+  if (!input.success) return response.status(400).json({ error: "Choose supported access options for each role." });
+  try {
+    const rolePermissions = await updateOrganizationRolePermissions(request.user.id, input.data.rolePermissions);
+    response.json({ rolePermissions });
   } catch (error) {
     next(error);
   }
 });
 
 usersRouter.patch("/", async (request, response, next) => {
+  const access = accessInput.safeParse(request.body);
+  if (access.success) {
+    try {
+      const rolePermissions = await updateOrganizationRolePermissions(request.user.id, access.data.rolePermissions);
+      return response.json({ rolePermissions });
+    } catch (error) {
+      return next(error);
+    }
+  }
   const reassignment = reassignInput.safeParse(request.body);
   if (reassignment.success) {
     try {
